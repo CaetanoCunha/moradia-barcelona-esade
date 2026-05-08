@@ -315,14 +315,16 @@ footer strong{color:var(--muted)}
 
   <div id="prompt-box-wrap" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:1rem 1.25rem;margin-bottom:1.25rem">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
-      <p style="font-size:13px;font-weight:600">✨ Prompt pronto — copie e cole no <a href="https://claude.ai" target="_blank">claude.ai</a> (gratuito)</p>
-      <div style="display:flex;gap:7px">
+      <p style="font-size:13px;font-weight:600">✨ Prompt pronto — edite se quiser e cole no <a href="https://claude.ai" target="_blank">claude.ai</a></p>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="salvarPromptCustom()" title="Salvar como padrão para próximas buscas">💾 Salvar como padrão</button>
+        <button class="btn btn-sm" onclick="resetarPrompt()" title="Restaurar prompt original">↺ Restaurar</button>
         <button class="btn btn-sm btn-primary" onclick="copiarPrompt()">📋 Copiar prompt</button>
         <button class="btn btn-sm" onclick="document.getElementById('prompt-box-wrap').style.display='none'">✕</button>
       </div>
     </div>
-    <textarea id="prompt-txt" style="width:100%;min-height:150px;font-size:12px;line-height:1.6;background:var(--bg)" readonly></textarea>
-    <p style="font-size:12px;color:var(--muted);margin-top:7px">Cole no Claude.ai → ele busca na web → copie os resultados que gostar → use "+ Adicionar apartamento" aqui.</p>
+    <textarea id="prompt-txt" style="width:100%;min-height:200px;font-size:12px;line-height:1.6;background:var(--bg)"></textarea>
+    <p style="font-size:12px;color:var(--muted);margin-top:7px">✏ Edite o prompt acima à vontade. Clique em <strong>💾 Salvar como padrão</strong> para manter suas edições nas próximas buscas.</p>
   </div>
 
   <div class="filter-panel">
@@ -860,29 +862,49 @@ function saveSettings(){
 function clearApiKey(){if(confirm('Apagar a API key?')){localStorage.removeItem('claudeApiKey');updateKeyStatus('');}}
 
 // ── PROMPT GRATUITO ───────────────────────────────────────────────────────────
-function gerarPromptGratis(){
+function gerarPromptBase(){
   const cfg=loadStorage('hcfg',{pmax:1500,quarto:'single',bairro:'',date:'2026-09-10'});
   const platNames=platforms.map(p=>p.nome).join(', ');
   const bairros='Gràcia, Eixample (Esquerra e Dreta), Poblenou, Sarrià-Sant Gervasi, Sants, Poble Sec, El Born, Sant Antoni, Les Corts, Collblanc, L\'Hospitalet de Llobregat, Sant Cugat del Vallès';
-  const tipo=cfg.quarto==='single'?'quarto individual em piso':cfg.quarto==='shared'?'quarto compartilhado':cfg.quarto==='studio'?'studio/apartamento solo':cfg.quarto==='apart'?'apartamento inteiro':'qualquer tipo';
-  const prompt=`Preciso encontrar moradia em Barcelona para setembro de 2026. Contexto: sou estudante internacional do MSc ESADE Business School em Sant Cugat del Vallès, programa de 13 meses (set/2026 – out/2027).
+  return `Preciso encontrar moradia em Barcelona para setembro de 2026. Sou estudante internacional do MSc ESADE Business School em Sant Cugat del Vallès, programa de 13 meses (set/2026 – out/2027).
+
+PREFERÊNCIAS (em ordem de prioridade):
+1. Studios ou apartamentos individuais com cozinha — APT SÓ MEU, sem dividir com outros
+2. Quartos individuais privativos em residências estudantis — SOMENTE se tiverem kitchenette/cozinha no quarto
+3. Quartos individuais em pisos compartilhados — última opção, sem preferência por shared flats
+NÃO quero: quartos sem cozinha própria em residências, quartos sem privacidade, shared bedrooms
 
 Perfil:
-- Orçamento: até €1.500/mês (PRIORIDADE ABSOLUTA: opções mais baratas primeiro)
-- Tipo preferido: ${tipo}
-- Bairros aceitos (todos válidos): ${bairros}
+- Orçamento: até €1.500/mês (ordenar do MAIS BARATO ao mais caro)
 - Disponível a partir de: ${cfg.date||'2026-09-10'}
-- Transporte crítico: FGC linha S5/S55 conecta Barcelona a Sant Cugat (~25 min). Bairros com FGC direto: Gràcia, Sarrià, Sant Gervasi, Les Corts. Outros bairros requerem baldeação.
+- Transporte: FGC S5/S55 Barcelona → Sant Cugat (~25 min). FGC direto: Gràcia, Sarrià, Sant Gervasi, Les Corts, Provença. Outros precisam baldeação.
+- Bairros aceitos: ${bairros}
 
 Por favor:
 1. Pesquise listings ATUAIS e REAIS em TODAS estas plataformas: ${platNames}
-2. Traga 8–12 opções concretas ORDENADAS DO MAIS BARATO AO MAIS CARO com: nome/descrição, bairro, preço/mês, tipo (piso compartilhado / coliving / studio solo / apt solo), link do anúncio, tempo de transporte até Sant Cugat e qual linha usar
-3. Para cada opção indique claramente: é piso compartilhado com outras pessoas? ou apartamento/studio só meu?
-4. Dê uma recomendação final com os 3 melhores custo-benefício considerando preço + transporte`;
+2. Traga 8–12 opções ORDENADAS DO MAIS BARATO AO MAIS CARO
+3. Para cada opção inclua OBRIGATORIAMENTE: nome, bairro, preço/mês, tipo exato (studio solo / apt solo / residência com kitchenette / quarto em piso compartilhado), link DIRETO do anúncio (não da plataforma, do anúncio em si), tempo de transporte até Sant Cugat e qual linha usar
+4. Recomendação final: 3 melhores custo-benefício priorizando cozinha própria + preço + transporte`;
+}
 
-  document.getElementById('prompt-txt').value=prompt;
+function gerarPromptGratis(){
+  const custom=localStorage.getItem('promptCustom');
+  document.getElementById('prompt-txt').value = custom || gerarPromptBase();
   document.getElementById('prompt-box-wrap').style.display='block';
   document.getElementById('prompt-box-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function salvarPromptCustom(){
+  const txt=document.getElementById('prompt-txt').value;
+  localStorage.setItem('promptCustom', txt);
+  const btn=event.target;
+  btn.textContent='✅ Salvo!';
+  setTimeout(()=>{btn.textContent='💾 Salvar como padrão';},2000);
+}
+
+function resetarPrompt(){
+  localStorage.removeItem('promptCustom');
+  document.getElementById('prompt-txt').value=gerarPromptBase();
 }
 
 function copiarPrompt(){
@@ -909,11 +931,11 @@ async function searchWithClaude(){
   let mi=0;loadTxt.textContent=msgs[0];
   const intv=setInterval(()=>{mi=(mi+1)%msgs.length;loadTxt.textContent=msgs[mi];},3000);
 
-  const systemPrompt=`Você é um assistente especializado em busca de moradia em Barcelona para estudantes internacionais. Pesquise e retorne resultados REAIS e ATUAIS de listings disponíveis, ordenados do mais barato ao mais caro. Retorne APENAS um array JSON válido, sem texto adicional, sem markdown, sem backticks. Cada objeto deve ter: nome (string descritiva), bairro (string), quarto (shared|single|studio|apart), pmin (number, preço mínimo mensal em EUR), pmax (number, preço máximo), url (string, URL do anúncio ou site da plataforma), notas (string, tipo de moradia + características principais + tempo de transporte até Sant Cugat + linha FGC/metro), avail (string YYYY-MM-DD), source (string, nome da plataforma). PRIORIZE sempre as opções mais baratas.`;
+  const systemPrompt=`Você é um assistente especializado em busca de moradia em Barcelona para estudantes internacionais. Pesquise e retorne resultados REAIS e ATUAIS, ordenados do mais barato ao mais caro. PRIORIDADE DO USUÁRIO: (1) studios/apts solos com cozinha, (2) residências com kitchenette no quarto, (3) quartos individuais em pisos compartilhados. NUNCA retorne quartos sem cozinha própria em residências. Retorne APENAS um array JSON válido, sem texto adicional, sem markdown, sem backticks. Cada objeto deve ter: nome (string descritiva incluindo tipo exato), bairro (string), quarto (shared|single|studio|apart), pmin (number), pmax (number), url (string — URL DIRETA DO ANÚNCIO ESPECÍFICO, não da plataforma), notas (string com: tipo de moradia, tem cozinha própria sim/não, características, transporte até Sant Cugat + linha), avail (string YYYY-MM-DD), source (string nome da plataforma).`;
 
   const platNames=platforms.map(p=>p.nome).join(', ');
-  const bairros='Gràcia, Eixample (Esquerra e Dreta), Poblenou, Sarrià-Sant Gervasi, Sants, Poble Sec, El Born, Sant Antoni, Les Corts, Collblanc, L\'Hospitalet, Sant Cugat del Vallès';
-  const userMsg=`Busque moradia em Barcelona disponível a partir de ${cfg.date} para estudante internacional do MSc ESADE Business School em Sant Cugat (programa 13 meses). Tipo preferido: "${cfg.quarto}", orçamento até €1500/mês (PRIORIDADE: opções mais baratas primeiro). Bairros aceitos: ${bairros}. Para cada opção indique claramente se é piso compartilhado, coliving, studio solo ou apartamento inteiro. Pesquise em TODAS estas plataformas: ${platNames}. Traga 8-12 opções reais e atuais ordenadas por preço crescente, com URL quando possível.`;
+  const bairros='Gràcia, Eixample, Poblenou, Sarrià-Sant Gervasi, Sants, Poble Sec, El Born, Sant Antoni, Les Corts, Collblanc, L\'Hospitalet, Sant Cugat del Vallès';
+  const userMsg=`Busque moradia em Barcelona disponível a partir de ${cfg.date} para estudante do MSc ESADE Business School em Sant Cugat (13 meses). Orçamento até €1500/mês, ordenar do mais barato ao mais caro. PREFERÊNCIA: studios ou apartamentos solos com cozinha; residências só se tiverem kitchenette no quarto; quartos em pisos compartilhados são última opção. Para cada resultado inclua a URL DIRETA do anúncio específico (não da homepage da plataforma). Pesquise em: ${platNames}. Bairros aceitos: ${bairros}. Traga 8-10 opções reais.`;
 
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
