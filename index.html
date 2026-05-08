@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moradia Barcelona — ESADE 2026</title>
+<style>
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:#f5f4f0;display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-box{background:#fff;border:1px solid #e0ddd5;border-radius:16px;padding:2.5rem 2rem;width:min(360px,92vw);display:flex;flex-direction:column;gap:16px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.login-box h2{font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px}
+.login-box p{font-size:13px;color:#65655d;margin-top:-8px}
+.login-box input{width:100%;font-size:15px;padding:10px 13px;border:1px solid #c8c5ba;border-radius:8px;outline:none;font-family:inherit}
+.login-box input:focus{border-color:#1a5fa8;box-shadow:0 0 0 3px rgba(26,95,168,.1)}
+.login-btn{width:100%;padding:11px;background:#1a5fa8;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+.login-btn:hover{background:#1450a0}
+.login-err{font-size:12px;color:#a02020;background:#fdeaea;border-radius:7px;padding:8px 12px;display:none}
+
+:root{
+  --bg:#f5f4f0;--card:#fff;--border:#e0ddd5;--border-s:#c8c5ba;
+  --text:#18180f;--muted:#65655d;--faint:#a0a098;
+  --accent:#1a5fa8;--accent-light:#e8f0fb;
+  --green-bg:#eaf4ee;--green-t:#1a6b3a;--green-b:#b8dfc6;
+  --blue-bg:#e8f0fb;--blue-t:#174e9e;
+  --amber-bg:#fef4e3;--amber-t:#7a4d0a;
+  --purple-bg:#f0eeff;--purple-t:#4a3aa0;
+  --teal-bg:#e2f6f0;--teal-t:#0f6a52;
+  --gray-bg:#f0efe8;--gray-t:#555550;
+  --red-bg:#fdeaea;--red-t:#a02020;
+  --fav:#d94040;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+button,input,select,textarea{font-family:inherit;font-size:13px}
+input,select,textarea{border:1px solid var(--border-s);border-radius:7px;padding:6px 10px;background:var(--card);color:var(--text);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,95,168,.1)}
+textarea{resize:vertical;min-height:60px}
+.btn{cursor:pointer;border:1px solid var(--border-s);border-radius:7px;padding:7px 13px;background:var(--card);color:var(--text);transition:all .15s;font-size:13px}
+.btn:hover{background:var(--gray-bg)}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:#1450a0}
+.btn-success{background:var(--green-t);color:#fff;border-color:var(--green-t)}
+.btn-success:hover{background:#155c30}
+.btn-sm{padding:4px 9px;font-size:12px}
+.btn-icon{padding:5px 8px;font-size:16px;line-height:1}
+
+/* LAYOUT */
+.wrap{max-width:1180px;margin:0 auto;padding:1.25rem 1.5rem}
+
+/* HEADER */
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.hdr-left h1{font-size:21px;font-weight:700;letter-spacing:-.3px}
+.hdr-left p{color:var(--muted);font-size:12px;margin-top:3px}
+.hdr-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+
+/* TABS */
+.tabs{display:flex;gap:2px;margin-bottom:1.25rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content}
+.tab{padding:7px 18px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--muted);transition:all .15s}
+.tab.active{background:var(--accent);color:#fff}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:1.25rem}
+.stat{border-radius:10px;padding:10px 13px}
+.stat .n{font-size:22px;font-weight:700}.stat .l{font-size:11px;margin-top:1px}
+.s1{background:var(--blue-bg)}.s1 .n,.s1 .l{color:var(--blue-t)}
+.s2{background:var(--green-bg)}.s2 .n,.s2 .l{color:var(--green-t)}
+.s3{background:var(--gray-bg)}.s3 .n,.s3 .l{color:var(--gray-t)}
+.s4{background:var(--amber-bg)}.s4 .n,.s4 .l{color:var(--amber-t)}
+.s5{background:var(--purple-bg)}.s5 .n,.s5 .l{color:var(--purple-t)}
+
+/* FILTER PANEL */
+.filter-panel{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:13px 15px;margin-bottom:1rem}
+.frow{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:7px}
+.frow:last-child{margin-bottom:0}
+.flabel{font-size:12px;color:var(--muted);min-width:50px;flex-shrink:0}
+.chk{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;color:var(--muted);user-select:none}
+.chk input{cursor:pointer;accent-color:var(--accent)}
+.price-w{display:flex;align-items:center;gap:7px}
+.price-w input[type=range]{width:90px;accent-color:var(--accent);padding:0;border:none;background:none;box-shadow:none}
+.pval{font-size:12px;color:var(--blue-t);font-weight:600;min-width:48px}
+.count-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.count-txt{font-size:13px;color:var(--muted)}
+.sort-w{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+
+/* SHORTLIST */
+.sl-box{background:var(--blue-bg);border:1px solid #c0d5f0;border-radius:11px;padding:12px 15px;margin-bottom:1.25rem}
+.sl-title{font-size:13px;font-weight:600;color:var(--blue-t);margin-bottom:8px}
+.sl-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;min-height:22px}
+.sl-tag{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border-s);border-radius:20px;padding:3px 10px;font-size:11px}
+.sl-tag button{background:none;border:none;padding:0 2px;color:var(--faint);font-size:14px;line-height:1;cursor:pointer}
+.sl-tag button:hover{color:var(--fav)}
+.via-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);background:var(--blue-bg);border:1px solid #c0d5f0;border-radius:20px;padding:2px 9px;cursor:pointer;transition:background .15s;white-space:nowrap}
+.via-badge:hover{background:#d0e4f8}
+.b-via{background:var(--teal-bg);color:var(--teal-t);border:1px solid #9fd8c8;transition:background .15s}
+.b-via:hover{background:#c8eee5}
+.via-highlight{outline:3px solid var(--accent);outline-offset:2px;animation:via-flash 2.5s ease forwards;}
+@keyframes via-flash{0%{outline-color:var(--accent);background:rgba(26,95,168,.08)}60%{outline-color:var(--accent);background:rgba(26,95,168,.08)}100%{outline-color:transparent;background:transparent}}
+.via-banner{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--accent);background:rgba(26,95,168,.1);border-left:3px solid var(--accent);padding:5px 10px;border-radius:0 6px 6px 0;margin-bottom:6px;animation:banner-fade 2.5s ease forwards;}
+@keyframes banner-fade{0%,60%{opacity:1;max-height:40px;margin-bottom:6px}100%{opacity:0;max-height:0;margin-bottom:0;padding:0}}
+
+/* CARDS GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(295px,1fr));gap:11px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px 15px;display:flex;flex-direction:column;gap:8px;transition:box-shadow .15s}
+.card:hover{box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.card.fav{border:2px solid #3b82c4}
+.card.st-no{opacity:.5}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.badges{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px}
+.badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px}
+.b-res{background:var(--teal-bg);color:var(--teal-t)}
+.b-col{background:var(--purple-bg);color:var(--purple-t)}
+.b-pla{background:var(--blue-bg);color:var(--blue-t)}
+.b-age{background:var(--amber-bg);color:var(--amber-t)}
+.b-por{background:var(--gray-bg);color:var(--gray-t)}
+.b-apt{background:#fff0f8;color:#8a1a6a}
+.b-shared{background:#fff8e6;color:#7a5c00}
+.b-single{background:#eaf5ff;color:#1a5a8a}
+.b-studio{background:#f0fff4;color:#1a6b3a}
+.b-apart{background:#fef0ff;color:#6a1a8a}
+.b-var{background:var(--gray-bg);color:var(--gray-t)}
+.b-loc{background:var(--gray-bg);color:var(--gray-t);font-weight:400}
+.b-ext{background:#f5f4f0;color:var(--faint);font-weight:400}
+.b-new{background:#fff0f0;color:#a02020}
+.card-name{font-size:14px;font-weight:600;line-height:1.3}
+.card-r{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.fav-btn{background:none;border:none;font-size:20px;line-height:1;padding:2px 3px;color:var(--faint);cursor:pointer;transition:color .15s}
+.fav-btn:hover,.fav-btn.on{color:var(--fav)}
+.status-btn{font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;border:none;cursor:pointer;white-space:nowrap}
+.stnc{background:#f5f4f0;color:var(--muted)}.stct{background:var(--amber-bg);color:var(--amber-t)}
+.stok{background:var(--green-bg);color:var(--green-t)}.stno{background:var(--red-bg);color:var(--red-t)}
+
+.addr{font-size:11px;color:var(--faint);display:flex;gap:4px;align-items:flex-start}
+.price-tag{font-size:14px;font-weight:700;color:var(--accent)}
+.price-est{font-size:11px;color:var(--faint);margin-left:3px}
+.disc-box{background:var(--green-bg);border:1px solid var(--green-b);border-radius:7px;padding:6px 10px;font-size:12px;color:var(--green-t);display:flex;gap:6px}
+.notes-txt{font-size:12px;color:var(--muted);line-height:1.55}
+.user-notes{font-size:12px;background:var(--amber-bg);border-radius:7px;padding:6px 10px;white-space:pre-wrap;line-height:1.5}
+.contact-row{margin-top:auto;border-top:1px solid var(--border);padding-top:8px;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.contact-row a,.contact-row span{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px}
+.contact-row a{color:var(--accent)}
+.edit-area{border-top:1px solid var(--border);padding-top:9px;display:flex;flex-direction:column;gap:7px}
+.edit-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.edit-row label{font-size:11px;color:var(--muted)}
+
+/* APT TAB SPECIFIC */
+.claude-panel{background:linear-gradient(135deg,#1a5fa8 0%,#0f3f7a 100%);border-radius:13px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.claude-panel h3{font-size:16px;font-weight:600;margin-bottom:4px}
+.claude-panel p{font-size:13px;opacity:.8;max-width:500px;line-height:1.5}
+.claude-actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.btn-white{background:#fff;color:var(--accent);border-color:#fff;font-weight:500}
+.btn-white:hover{background:#f0f4ff}
+.btn-outline-white{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4)}
+.btn-outline-white:hover{background:rgba(255,255,255,.1)}
+
+/* LOADING STATE */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff}
+.loading-overlay.show{display:flex}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;opacity:.9}
+
+/* PREVIEW CARDS */
+.preview-section{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:1.25rem;margin-bottom:1.25rem;display:none}
+.preview-section.show{display:block}
+.preview-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.preview-header h3{font-size:15px;font-weight:600}
+.preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:1rem}
+.preview-card{border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg);position:relative}
+.preview-card .add-btn{position:absolute;top:10px;right:10px}
+.source-badge{font-size:10px;color:var(--faint);margin-top:4px}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--card);border-radius:14px;padding:1.5rem;width:min(540px,95vw);max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.modal h2{font-size:17px;font-weight:600}
+.mrow{display:flex;flex-direction:column;gap:4px}
+.mrow label{font-size:12px;color:var(--muted)}
+.mrow input,.mrow select,.mrow textarea{width:100%}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mactions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+
+/* SETTINGS MODAL */
+.settings-modal{background:var(--card);border-radius:14px;padding:1.5rem;width:min(480px,95vw);display:flex;flex-direction:column;gap:14px}
+.settings-modal h2{font-size:17px;font-weight:600}
+.api-key-input{width:100%;font-family:monospace;font-size:12px;letter-spacing:.5px}
+.key-status{font-size:12px;padding:6px 10px;border-radius:7px;display:flex;align-items:center;gap:6px}
+.key-ok{background:var(--green-bg);color:var(--green-t)}.key-missing{background:var(--amber-bg);color:var(--amber-t)}
+
+/* EMPTY */
+.empty{text-align:center;padding:3rem 0;color:var(--faint)}
+.empty-icon{font-size:36px;display:block;margin-bottom:8px}
+
+/* FOOTER */
+footer{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);font-size:12px;color:var(--faint);line-height:1.8}
+footer strong{color:var(--muted)}
+
+@media(max-width:680px){.stats{grid-template-columns:repeat(3,1fr)}.s5{display:none}}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div>
+      <h2>🏠 Moradia Barcelona</h2>
+      <p>ESADE 2026 — acesso restrito</p>
+    </div>
+    <input type="password" id="pwd-input" placeholder="Senha" onkeydown="if(event.key==='Enter')checkPwd()">
+    <div class="login-err" id="login-err">Senha incorreta. Tente novamente.</div>
+    <button class="login-btn" onclick="checkPwd()">Entrar</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <h1>🏠 Moradia Barcelona — ESADE 2026</h1>
+    <p id="sub-txt">Carregando...</p>
+  </div>
+  <div class="hdr-actions">
+    <button class="btn" onclick="exportAll()">⬇ Exportar</button>
+    <label class="btn" style="margin:0;cursor:pointer">⬆ Importar<input type="file" accept=".json" onchange="importAll(event)" style="display:none"></label>
+    <button class="btn btn-icon" onclick="openSettings()" title="Configurar API Claude">⚙️</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('platforms')">🏢 Plataformas & Residências</button>
+  <button class="tab" onclick="switchTab('apartments')">🏠 Apartamentos Específicos</button>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat s1"><div class="n" id="s-total">0</div><div class="l">opções totais</div></div>
+  <div class="stat s2"><div class="n" id="s-disc">0</div><div class="l">desconto ESADE</div></div>
+  <div class="stat s3"><div class="n" id="s-ct">0</div><div class="l">já contatados</div></div>
+  <div class="stat s4"><div class="n" id="s-ok">0</div><div class="l">disponíveis</div></div>
+  <div class="stat s5"><div class="n" id="s-sl">0</div><div class="l">shortlist</div></div>
+</div>
+
+<!-- TAB: PLATFORMS -->
+<div id="tab-platforms" class="tab-content active">
+  <div class="filter-panel">
+    <div class="frow">
+      <span class="flabel">Buscar</span>
+      <input type="text" id="pq" placeholder="nome, bairro, palavra..." style="width:200px">
+      <select id="ptipo"><option value="">Todos os tipos</option><option value="residencia">Residência</option><option value="coliving">Coliving</option><option value="plataforma">Plataforma</option><option value="agencia">Agência</option><option value="portal">Portal</option></select>
+      <select id="pquarto"><option value="">Qualquer quarto</option><option value="shared">Compartilhado</option><option value="single">Individual</option><option value="studio">Studio</option><option value="apart">Apartamento</option><option value="various">Vários</option></select>
+      <select id="pstatus"><option value="">Qualquer status</option><option value="nao_contatado">Não contatado</option><option value="contatado">Contatado</option><option value="disponivel">Disponível</option><option value="indisponivel">Indisponível</option></select>
+    </div>
+    <div class="frow">
+      <span class="flabel">Local</span>
+      <select id="plocal"><option value="">Toda área</option><option value="sant_cugat">Sant Cugat</option><option value="Eixample">Eixample</option><option value="Gràcia">Gràcia</option><option value="Poblenou">Poblenou / 22@</option><option value="Sarrià">Sarrià / Sant Gervasi</option><option value="Poble Sec">Poble Sec</option><option value="Sants">Sants</option><option value="L'Hospitalet">L'Hospitalet</option><option value="Collblanc">Collblanc</option><option value="Múltiplos">Múltiplos</option></select>
+      <div class="price-w"><span class="flabel" style="min-width:auto">Até</span><input type="range" id="pprice" min="0" max="2000" step="50" value="2000" oninput="document.getElementById('ppval').textContent=this.value>=2000?'qualquer':'€'+this.value"><span class="pval" id="ppval">qualquer</span></div>
+      <input type="date" id="pavail" title="Disponível a partir de" style="width:150px">
+      <label class="chk"><input type="checkbox" id="pdisc"> Só desconto ESADE</label>
+      <label class="chk"><input type="checkbox" id="phb"> Só handbook</label>
+      <label class="chk"><input type="checkbox" id="pfav"> Só shortlist</label>
+    </div>
+  </div>
+
+  <div class="sl-box">
+    <div class="sl-title">❤️ Shortlist</div>
+    <div class="sl-tags" id="sl-tags"><span style="font-size:12px;color:var(--blue-t);opacity:.7">Clique no ♡ em qualquer card para favoritar.</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-sm" onclick="copiarContatos()">📋 Copiar contatos</button>
+    </div>
+  </div>
+
+  <div class="count-bar">
+    <span class="count-txt" id="p-count"></span>
+    <div class="sort-w">Ordenar: <select id="psort" style="font-size:12px;padding:4px 8px"><option value="nome">A–Z</option><option value="preco">Preço</option><option value="status">Status</option><option value="tipo">Tipo</option></select></div>
+  </div>
+  <div class="grid" id="p-grid"></div>
+  <div class="empty" id="p-empty" style="display:none"><span class="empty-icon">🔍</span><p>Nenhum resultado com esses filtros.</p></div>
+
+  <div style="margin-top:1.25rem;text-align:right">
+    <button class="btn btn-primary" onclick="openAddModal('platform')">+ Adicionar plataforma/residência</button>
+  </div>
+</div>
+
+<!-- TAB: APARTMENTS -->
+<div id="tab-apartments" class="tab-content">
+
+  <div class="claude-panel">
+    <div>
+      <h3>🤖 Buscar apartamentos com Claude</h3>
+      <p>Claude pesquisa na web listings atuais (Idealista, Fotocasa, Habitaclia, Spotahome…) e traz opções reais para setembro 2026. Você revisa e adiciona os que quiser.</p>
+    </div>
+    <div class="claude-actions">
+      <button class="btn btn-white" onclick="searchWithClaude()" title="Requer API key (~$1–2/busca)">🔍 Buscar automaticamente</button>
+      <button class="btn btn-outline-white" onclick="gerarPromptGratis()" title="Grátis — gera prompt para colar no Claude.ai">✨ Grátis: gerar prompt</button>
+      <button class="btn btn-outline-white" onclick="openSettings()">⚙ API Key</button>
+    </div>
+  </div>
+
+  <div class="preview-section" id="preview-section">
+    <div class="preview-header">
+      <h3>📋 Resultados encontrados pelo Claude <span id="preview-count" style="font-size:13px;color:var(--muted)"></span></h3>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-sm btn-success" onclick="addAllPreviews()">+ Adicionar todos</button>
+        <button class="btn btn-sm" onclick="clearPreviews()">✕ Fechar</button>
+      </div>
+    </div>
+    <div class="preview-grid" id="preview-grid"></div>
+  </div>
+
+  <div id="prompt-box-wrap" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:1rem 1.25rem;margin-bottom:1.25rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+      <p style="font-size:13px;font-weight:600">✨ Prompt pronto — copie e cole no <a href="https://claude.ai" target="_blank">claude.ai</a> (gratuito)</p>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-sm btn-primary" onclick="copiarPrompt()">📋 Copiar prompt</button>
+        <button class="btn btn-sm" onclick="document.getElementById('prompt-box-wrap').style.display='none'">✕</button>
+      </div>
+    </div>
+    <textarea id="prompt-txt" style="width:100%;min-height:150px;font-size:12px;line-height:1.6;background:var(--bg)" readonly></textarea>
+    <p style="font-size:12px;color:var(--muted);margin-top:7px">Cole no Claude.ai → ele busca na web → copie os resultados que gostar → use "+ Adicionar apartamento" aqui.</p>
+  </div>
+
+  <div class="filter-panel">
+    <div class="frow">
+      <span class="flabel">Buscar</span>
+      <input type="text" id="aq" placeholder="rua, bairro, palavra..." style="width:200px">
+      <select id="aquarto"><option value="">Qualquer quarto</option><option value="shared">Compartilhado</option><option value="single">Individual</option><option value="studio">Studio</option><option value="apart">Apartamento</option></select>
+      <select id="astatus"><option value="">Qualquer status</option><option value="nao_contatado">Não contatado</option><option value="contatado">Contatado</option><option value="disponivel">Disponível</option><option value="indisponivel">Indisponível</option></select>
+    </div>
+    <div class="frow">
+      <span class="flabel">Bairro</span>
+      <select id="abairro"><option value="">Todos os bairros</option><option value="Eixample">Eixample</option><option value="Gràcia">Gràcia</option><option value="Poblenou">Poblenou</option><option value="Sarrià">Sarrià</option><option value="Poble Sec">Poble Sec</option><option value="Sants">Sants</option><option value="Collblanc">Collblanc</option><option value="L'Hospitalet">L'Hospitalet</option><option value="Sant Cugat">Sant Cugat</option></select>
+      <div class="price-w"><span class="flabel" style="min-width:auto">Até</span><input type="range" id="aprice" min="0" max="2000" step="50" value="2000" oninput="document.getElementById('apval').textContent=this.value>=2000?'qualquer':'€'+this.value"><span class="pval" id="apval">qualquer</span></div>
+      <label class="chk"><input type="checkbox" id="afav"> Só shortlist</label>
+    </div>
+  </div>
+
+  <div class="count-bar">
+    <span class="count-txt" id="a-count"></span>
+    <div class="sort-w">Ordenar: <select id="asort" style="font-size:12px;padding:4px 8px"><option value="preco">Preço</option><option value="nome">A–Z</option><option value="status">Status</option></select></div>
+  </div>
+  <div class="grid" id="a-grid"></div>
+  <div class="empty" id="a-empty">
+    <span class="empty-icon">🏠</span>
+    <p style="margin-bottom:12px">Nenhum apartamento ainda.<br>Use o botão acima para Claude buscar opções, ou adicione manualmente.</p>
+    <button class="btn btn-primary" onclick="openAddModal('apartment')">+ Adicionar manualmente</button>
+  </div>
+
+  <div style="margin-top:1.25rem;text-align:right">
+    <button class="btn btn-primary" onclick="openAddModal('apartment')">+ Adicionar apartamento</button>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-txt">Claude está pesquisando...</div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-bg" id="add-modal" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal">
+    <h2 id="add-modal-title">+ Adicionar opção</h2>
+    <div class="mgrid">
+      <div class="mrow" style="grid-column:1/-1"><label>Nome / Descrição *</label><input id="m-nome" placeholder="Ex: Quarto individual — Gràcia, perto da Fontana"></div>
+      <div class="mrow"><label>Tipo</label><select id="m-tipo"><option value="residencia">Residência</option><option value="coliving">Coliving</option><option value="plataforma">Plataforma</option><option value="agencia">Agência</option><option value="portal">Portal</option><option value="apartamento">Apartamento específico</option></select></div>
+      <div class="mrow"><label>Quarto</label><select id="m-quarto"><option value="shared">Compartilhado</option><option value="single">Individual</option><option value="studio">Studio</option><option value="apart">Apartamento</option></select></div>
+      <div class="mrow"><label>Preço mín (€/mês)</label><input id="m-pmin" type="number" placeholder="650"></div>
+      <div class="mrow"><label>Preço máx (€/mês)</label><input id="m-pmax" type="number" placeholder="850"></div>
+      <div class="mrow"><label>Bairro</label><input id="m-bairro" placeholder="Ex: Gràcia"></div>
+      <div class="mrow"><label>Disponível a partir de</label><input id="m-avail" type="date"></div>
+      <div class="mrow"><label>Email</label><input id="m-email" type="email" placeholder="contato@..."></div>
+      <div class="mrow"><label>Telefone</label><input id="m-tel" placeholder="+34..."></div>
+      <div class="mrow" style="grid-column:1/-1"><label>Link do anúncio</label><input id="m-site" placeholder="https://idealista.com/..."></div>
+      <div class="mrow" style="grid-column:1/-1"><label>Endereço</label><input id="m-end" placeholder="Rua, número"></div>
+      <div class="mrow" style="grid-column:1/-1"><label>Notas</label><textarea id="m-notas" placeholder="Características, transporte, impressão..."></textarea></div>
+      <div class="mrow" style="grid-column:1/-1"><label>Desconto / código ESADE</label><input id="m-disc" placeholder="deixar vazio se não houver"></div>
+    </div>
+    <div class="mactions">
+      <button class="btn" onclick="closeAddModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveNewListing()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-bg" id="settings-modal" onclick="if(event.target===this)closeSettings()">
+  <div class="settings-modal">
+    <h2>⚙️ Configurações</h2>
+    <div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Para usar a busca com Claude, você precisa de uma API key da Anthropic. É como usar o Claude.ai mas via API — cobrado por uso (~$1–2 por pesquisa com web search).</p>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+        <a href="https://console.anthropic.com" target="_blank" class="btn btn-sm btn-primary">Obter API Key →</a>
+        <span style="font-size:12px;color:var(--muted)">(console.anthropic.com → API Keys)</span>
+      </div>
+    </div>
+    <div class="mrow">
+      <label>Sua API Key (salva localmente no browser)</label>
+      <input class="api-key-input" id="api-key-input" type="password" placeholder="sk-ant-api03-...">
+    </div>
+    <div id="key-status" class="key-status key-missing">🔑 Nenhuma chave configurada</div>
+    <div>
+      <p style="font-size:12px;color:var(--faint)">A chave fica salva no localStorage do seu browser — nunca é enviada para nenhum servidor além da API da Anthropic. Para uso pessoal, isso é seguro.</p>
+    </div>
+    <div style="margin-top:4px">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px"><strong>Perfil de busca atual:</strong></p>
+      <div class="mgrid" style="gap:7px">
+        <div class="mrow"><label>Orçamento máx (€/mês)</label><input id="cfg-pmax" type="number" value="1000" placeholder="1000"></div>
+        <div class="mrow"><label>Tipo preferido</label><select id="cfg-quarto"><option value="single">Individual</option><option value="shared">Compartilhado</option><option value="studio">Studio</option><option value="apart">Apartamento</option></select></div>
+        <div class="mrow"><label>Bairro prioritário</label><input id="cfg-bairro" placeholder="ex: Gràcia, Eixample..." value="Gràcia, Eixample, Poblenou"></div>
+        <div class="mrow"><label>Data de chegada</label><input id="cfg-date" type="date" value="2026-09-10"></div>
+      </div>
+    </div>
+    <div class="mactions">
+      <button class="btn" onclick="clearApiKey()">Apagar chave</button>
+      <button class="btn" onclick="closeSettings()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>Hospedar no Netlify (grátis, 30 segundos, sem conta):</strong> Acesse <a href="https://app.netlify.com/drop" target="_blank">app.netlify.com/drop</a> e arraste este arquivo. URL gerada na hora. Para atualizar: exporte o JSON, suba novo arquivo, importe o JSON.<br>
+  <strong>Dica:</strong> Exporte seu JSON regularmente como backup. Os dados ficam no localStorage do browser.
+</footer>
+</div>
+
+<script>
+// ── DADOS PLATAFORMAS/RESIDÊNCIAS ─────────────────────────────────────────────
+const BASE_PLATFORMS = [
+  {id:1,nome:"Roberto de Nobili",tipo:"residencia",bairro:"Sant Cugat",local:"sant_cugat",quarto:"single",pmin:700,pmax:900,disc:false,discInfo:null,avail:"2026-09-01",hb:true,notas:"Residência clássica próxima ao campus ESADE. Opção mais próxima fisicamente.",email:"robertodenobili@resa.es",tel:"+34 93 554 3015",end:"c/ de Llaceres, 29 — Sant Cugat",site:null},
+  {id:2,nome:"Yugo – Alba Viu",tipo:"residencia",bairro:"Sant Cugat",local:"sant_cugat",quarto:"single",pmin:800,pmax:1050,disc:true,discInfo:"5% para estadias ≥ 9,5 meses — enviar carta ESADE por email",avail:"2026-09-01",hb:true,notas:"Cerdanyola del Vallès, ao lado do campus. Boa relação custo-benefício.",email:"alba@yugo.com",tel:"+34 699 213 621",end:"Av. Ciència — Cerdanyola del Vallès",site:null},
+  {id:3,nome:"Vita Student",tipo:"residencia",bairro:"Sarrià",local:"barcelona",quarto:"single",pmin:1000,pmax:1450,disc:true,discInfo:"5% via link especial para estadias ≥ 10 meses — carta de admissão ESADE",avail:"2026-09-01",hb:true,notas:"Unidades em Pedralbes (nobre, FGC p/ campus) e Poblenou. Padrão alto.",email:null,tel:null,end:"Pedralbes | Poblenou — Barcelona",site:"https://vitastudent.com"},
+  {id:4,nome:"Blau Student Housing",tipo:"residencia",bairro:"Poblenou",local:"barcelona",quarto:"single",pmin:750,pmax:1000,disc:true,discInfo:"€150 de desconto por mês — código: ESADE",avail:"2026-09-01",hb:true,notas:"Desconto fixo mensal expressivo — um dos melhores custo-benefício. Reservar cedo.",email:"info@blaustudenthousing.com",tel:"+34 664 098 216",end:"c/ del Perú, 110 — Poblenou",site:null},
+  {id:5,nome:"Xior Student Housing",tipo:"residencia",bairro:"Collblanc",local:"barcelona",quarto:"single",pmin:800,pmax:1150,disc:true,discInfo:"Booking gratuito + €25 desconto/mês para alunos ESADE",avail:"2026-09-01",hb:true,notas:"Três localizações: Collblanc, The Lofttown, Diagonal Besòs.",email:null,tel:null,end:"Collblanc | Lofttown | Diagonal Besòs",site:"https://www.xiorstudent.com"},
+  {id:6,nome:"La Fábrica & Co",tipo:"coliving",bairro:"Poblenou",local:"barcelona",quarto:"single",pmin:1000,pmax:1400,disc:true,discInfo:"10% para estadias ≥ 6 meses — mostrar carta de admissão ESADE",avail:"2026-09-01",hb:true,notas:"Coliving para pós-graduação em Poblenou (22@). Comunidade ativa.",email:"hola@lafabrica-co.com",tel:"+34 699 246 124",end:"c/ Doctor Trueta 191 — Poblenou",site:null},
+  {id:7,nome:"Nodis Barcelona Campus",tipo:"residencia",bairro:"L'Hospitalet",local:"barcelona",quarto:"single",pmin:700,pmax:950,disc:true,discInfo:"20% na taxa de reserva — código: NODIS24ESAD20",avail:"2026-09-01",hb:true,notas:"L'Hospitalet. Mais barato que central. Metro L1/L9 bem conectado.",email:"reservas.barcelona@nodis.es",tel:"+34 917 919 410",end:"Travessera Collblanc 71-75B — L'Hospitalet",site:null},
+  {id:8,nome:"The Social Hub",tipo:"coliving",bairro:"Poblenou",local:"barcelona",quarto:"single",pmin:1200,pmax:1700,disc:true,discInfo:"Código: PRESADE para tarifas especiais",avail:"2026-09-01",hb:true,notas:"Premium: coworking, academia, áreas comuns. Popular entre internacionais. All-inclusive.",email:"barcelonapn@thesocialhub.com",tel:"+34 932 207 279",end:"c/ Cristobal de Moura, 49",site:"https://www.thesocialhub.co"},
+  {id:9,nome:"Livensa Living",tipo:"residencia",bairro:"Múltiplos",local:"barcelona",quarto:"single",pmin:800,pmax:1100,disc:true,discInfo:"Código BAR_ESA_AY (ano letivo) ou BAR_ESA_SM (semestre)",avail:"2026-09-01",hb:true,notas:"Várias unidades: Esplugues, Marina, Sants-Badal, Paral·lel.",email:"living@livensaliving.com",tel:"+34 913 103 032",end:"Esplugues | Marina | Sants | Paral·lel",site:"https://www.livensaliving.com"},
+  {id:10,nome:"Resa Student Residence",tipo:"residencia",bairro:"Múltiplos",local:"barcelona",quarto:"single",pmin:780,pmax:1200,disc:false,discInfo:null,avail:"2026-09-01",hb:true,notas:"Rede nacional. 7 unidades em BCN: Lesseps, Ciutadella, Diagonal, Campus del Mar...",email:"resa@resa.es",tel:"+34 933 943 500",end:"Múltiplas unidades — Barcelona",site:"https://www.resa.es"},
+  {id:21,nome:"Residència Universitária Sarrià",tipo:"residencia",bairro:"Sarrià",local:"barcelona",quarto:"single",pmin:850,pmax:1100,disc:false,discInfo:null,avail:"2026-09-01",hb:true,notas:"Bairro nobre Sarrià-Sant Gervasi. FGC conecta direto a Sant Cugat (~25 min). Ambiente tranquilo e residencial.",email:"campus@residenciasarria.com",tel:"+34 932 065 540",end:"c/ Esports, 1-7 — Sarrià, Barcelona",site:null},
+  {id:22,nome:"Yugo – Beyoo (Marina / Poble Sec)",tipo:"residencia",bairro:"Poble Sec",local:"barcelona",quarto:"single",pmin:850,pmax:1100,disc:false,discInfo:null,avail:"2026-09-01",hb:true,notas:"Duas unidades em Barcelona: Marina (mais central) e Poble Sec (mais acessível). Mesma rede do Alba Viu.",email:"beyoomarina@yugo.com",tel:"+34 681 216 406",end:"Beyoo Marina | Beyoo Poble Sec — Barcelona",site:null},
+  {id:23,nome:"Grupo Mestral",tipo:"residencia",bairro:"Múltiplos",local:"barcelona",quarto:"single",pmin:750,pmax:1100,disc:false,discInfo:null,avail:"2026-09-01",hb:true,notas:"Maior operador em BCN. Residências (Cosmopolitan, Turó Park, Paseo de Gracia…) e apartamentos (Aragó, Muntaner, Gran Vía…). Grande variedade.",email:"manyanet@grupomestral.es",tel:"+34 931 000 240",end:"Múltiplas unidades — Barcelona",site:null},
+  {id:24,nome:"BCN Gràcia Student Housing",tipo:"residencia",bairro:"Gràcia",local:"barcelona",quarto:"single",pmin:750,pmax:1000,disc:false,discInfo:null,avail:"2026-09-01",hb:true,notas:"Bairro Gràcia, tradicional, movimentado e universitário. Boa vida de bairro com praças e comércio local.",email:"info@barcelona-housing-student.com",tel:"+34 671 295 858",end:"c/ Gran de Gràcia, 117 — Gràcia",site:null},
+  {id:25,nome:"Residència Erasmus Gràcia",tipo:"residencia",bairro:"Gràcia",local:"barcelona",quarto:"shared",pmin:600,pmax:850,disc:false,discInfo:null,avail:"2026-09-01",hb:true,notas:"Popular entre intercambistas e pós-graduandos internacionais. Ambiente multicultural. Quartos duplos disponíveis.",email:"info@residenciaerasmusgracia.com",tel:"+34 934 151 203",end:"c/ Torrent de l'Olla, 212-214 — Gràcia",site:null},
+  {id:26,nome:"Aticco Living",tipo:"coliving",bairro:"Poblenou",local:"barcelona",quarto:"single",pmin:1000,pmax:1400,disc:false,discInfo:null,avail:null,hb:true,notas:"Coliving em Poblenou (22@, ecossistema tech). Validado pelo ESADE. Ambiente jovem e profissional.",email:"sales@aticcoliving.com",tel:"+34 649 269 617",end:"c/ Pallars, 108 — Poblenou",site:null},
+  {id:27,nome:"Habitatge Jove",tipo:"agencia",bairro:"Eixample",local:"barcelona",quarto:"various",pmin:600,pmax:1000,disc:false,discInfo:null,avail:null,hb:true,notas:"Agência validada pelo ESADE. Imóveis mobiliados para estudantes em Eixample.",email:"info@habitatgejove.com",tel:"+34 933 239 068",end:"c/ Enric Granados, 19 Bajos 1 — Eixample",site:null},
+  {id:28,nome:"Atemporal",tipo:"agencia",bairro:"Eixample",local:"barcelona",quarto:"apart",pmin:800,pmax:1300,disc:false,discInfo:null,avail:null,hb:true,notas:"Agência validada pelo ESADE. Apartamentos mobiliados de qualidade na área do Passeig de Gràcia.",email:"info@atemporalrent.com",tel:"+34 931 226 801",end:"Passeig de Gràcia, 85 — Eixample",site:null},
+  {id:29,nome:"Destination BCN",tipo:"agencia",bairro:"Eixample",local:"barcelona",quarto:"apart",pmin:900,pmax:1400,disc:false,discInfo:null,avail:null,hb:true,notas:"Agência validada pelo ESADE. Central, área Universitat/Eixample. Apartamentos mobiliados.",email:"info@destinationbcn.com",tel:"+34 935 325 267",end:"Ronda Universitat, 11 — Barcelona",site:null},
+  {id:30,nome:"LiveFurther",tipo:"plataforma",bairro:"Múltiplos",local:"barcelona",quarto:"various",pmin:null,pmax:null,disc:true,discInfo:"20% na taxa de reserva — escrever 'ESADE' no campo de código parceiro + 'Organization referral' + anexar carta de admissão",avail:null,hb:true,notas:"Fundada por alumni ESADE. Listagens verificadas. Reputação positiva entre alunos internacionais.",email:null,tel:null,end:null,site:null},
+  {id:31,nome:"101 Pisos",tipo:"agencia",bairro:"Sant Cugat",local:"sant_cugat",quarto:"apart",pmin:700,pmax:1100,disc:false,discInfo:null,avail:null,hb:true,notas:"Agência local de Sant Cugat. Imóveis próximos ao campus ESADE. Boa opção para quem prefere morar perto da escola.",email:"gestion@101pisos.com",tel:"+34 935 897 374",end:"c/ Valldoreix, 58 — Sant Cugat",site:null},
+  {id:32,nome:"Cugat Casas",tipo:"agencia",bairro:"Sant Cugat",local:"sant_cugat",quarto:"apart",pmin:650,pmax:1050,disc:false,discInfo:null,avail:null,hb:true,notas:"Agência local de Sant Cugat. Boa seleção de pisos para estudantes e profissionais.",email:"cugatcasas@cugatcasas.com",tel:"+34 935 895 176",end:"Av. Josep Anselm Clavé, 22 — Sant Cugat",site:null},
+  {id:33,nome:"Fincas Moragas",tipo:"agencia",bairro:"Sant Cugat",local:"sant_cugat",quarto:"apart",pmin:650,pmax:1000,disc:false,discInfo:null,avail:null,hb:true,notas:"Agência tradicional e consolidada de Sant Cugat del Vallès.",email:"info@fincasmoragas.com",tel:"+34 936 751 236",end:"c/ Francesc Moragas, 17-19 — Sant Cugat",site:null},
+  {id:11,nome:"Uniplaces",tipo:"plataforma",bairro:"Múltiplos",local:"barcelona",quarto:"various",pmin:500,pmax:1200,disc:true,discInfo:"50% na taxa de serviço — código: UP50ESADE | WhatsApp +35 191 232 72 59",avail:null,hb:true,notas:"Maior plataforma global de aluguéis mobiliados verificados. Quartos e apartamentos.",email:null,tel:"+35 191 232 72 59",end:null,site:"https://www.uniplaces.com"},
+  {id:12,nome:"Spotahome",tipo:"plataforma",bairro:"Múltiplos",local:"barcelona",quarto:"various",pmin:500,pmax:1100,disc:true,discInfo:"30% na taxa de serviço única — código: ESADE30 (checkout)",avail:null,hb:true,notas:"110k+ imóveis Europa. Tour em vídeo, verificados por equipe local.",email:null,tel:null,end:null,site:"https://www.spotahome.com"},
+  {id:13,nome:"ElDomi Living",tipo:"plataforma",bairro:"Múltiplos",local:"barcelona",quarto:"various",pmin:null,pmax:null,disc:true,discInfo:"Concierge gratuito ESADE: opções em 72h, reservável 3 meses antes",avail:null,hb:true,notas:"Fundada por alumni ESADE. Residências, coliving, apartamentos. Suporte local.",email:"contact@eldomi.es",tel:"+34 665 605 083",end:null,site:"https://eldomi.es"},
+  {id:14,nome:"BCN-Nest",tipo:"plataforma",bairro:"Múltiplos",local:"barcelona",quarto:"various",pmin:null,pmax:null,disc:true,discInfo:"Consulta gratuita sem compromisso",avail:null,hb:true,notas:"Concierge pessoal (Margarita e Pura). Altamente recomendado pelo handbook para quem vem de fora.",email:"infobcnnest@gmail.com",tel:null,end:null,site:null},
+  {id:15,nome:"HousingAnywhere",tipo:"plataforma",bairro:"Múltiplos",local:"barcelona",quarto:"various",pmin:500,pmax:1100,disc:false,discInfo:null,avail:null,hb:true,notas:"Internacional. Boa para sublocação de estudantes saindo. Perfis verificados.",email:null,tel:null,end:null,site:"https://housinganywhere.com"},
+  {id:16,nome:"BSP Students",tipo:"plataforma",bairro:"Múltiplos",local:"barcelona",quarto:"shared",pmin:500,pmax:850,disc:true,discInfo:"10% no aluguel durante toda a estadia — carta ESADE",avail:null,hb:true,notas:"Especializado em estudantes. Quartos em apartamentos compartilhados.",email:"bsp@barnastudentsplace.com",tel:"+34 620 054 888",end:null,site:null},
+  {id:17,nome:"Idealista",tipo:"portal",bairro:"Múltiplos",local:"barcelona",quarto:"various",pmin:400,pmax:1500,disc:false,discInfo:null,avail:null,hb:false,notas:"Maior portal espanhol. Direto com proprietário = sem taxa. Mais triagem. NUNCA transfira dinheiro fora da plataforma.",email:null,tel:null,end:null,site:"https://www.idealista.com"},
+  {id:18,nome:"Fotocasa",tipo:"portal",bairro:"Múltiplos",local:"barcelona",quarto:"various",pmin:400,pmax:1500,disc:false,discInfo:null,avail:null,hb:false,notas:"Segundo maior portal. Útil para benchmarking de preço de mercado.",email:null,tel:null,end:null,site:"https://www.fotocasa.es"},
+  {id:19,nome:"Badi",tipo:"portal",bairro:"Múltiplos",local:"barcelona",quarto:"shared",pmin:400,pmax:800,disc:false,discInfo:null,avail:null,hb:false,notas:"App de roommate. Perfis verificados por selfie. Ideal para quarto em apartamento já formado.",email:null,tel:null,end:null,site:"https://badi.com"},
+  {id:20,nome:"Habitaclia",tipo:"portal",bairro:"Múltiplos",local:"barcelona",quarto:"various",pmin:400,pmax:1400,disc:false,discInfo:null,avail:null,hb:false,notas:"Portal catalão. Boa seleção em Barcelona e Sant Cugat.",email:null,tel:null,end:null,site:"https://www.habitaclia.com"},
+  {id:34,nome:"Haaus Coliving",tipo:"coliving",bairro:"Eixample",local:"barcelona",quarto:"single",pmin:750,pmax:990,disc:false,discInfo:null,avail:null,hb:false,notas:"Coliving no Eixample. Quartos privativos com varanda. Tudo incluído: WiFi, limpeza semanal, manutenção 24h, móveis novos. FGC estação Provença a ~10 min.",email:null,tel:null,end:"Eixample, Barcelona",site:"https://www.haaus.eu/en/rooms"},
+  {id:35,nome:"Enter Coliving",tipo:"coliving",bairro:"Gràcia",local:"barcelona",quarto:"single",pmin:650,pmax:900,disc:false,discInfo:null,avail:null,hb:false,notas:"~550 quartos privativos em BCN. Ocupação 95–99%. Perfil: estudantes internacionais 21–35 anos. Inclui eventos, limpeza semanal, WiFi. Unidades em Gràcia, Eixample, Poblenou e Born.",email:null,tel:null,end:"Gràcia | Eixample | Poblenou | Born — Barcelona",site:"https://entercoliving.com/"},
+  {id:36,nome:"Inèdit Barcelona",tipo:"coliving",bairro:"Gràcia",local:"barcelona",quarto:"single",pmin:700,pmax:950,disc:false,discInfo:null,avail:null,hb:false,notas:"Coliving para estudantes internacionais e jovens profissionais 25–40 anos. Inclui limpeza semanal, WiFi, até €60 de contas/mês. Suporte com empadronamento, NIE e conta bancária.",email:null,tel:null,end:"Múltiplos bairros — Barcelona",site:"https://www.ineditbarcelona.com/"}
+];
+
+const TIPO_CL={residencia:'b-res',coliving:'b-col',plataforma:'b-pla',agencia:'b-age',portal:'b-por',apartamento:'b-apt'};
+const TIPO_LB={residencia:'Residência',coliving:'Coliving',plataforma:'Plataforma',agencia:'Agência',portal:'Portal',apartamento:'Apartamento'};
+const QUARTO_CL={shared:'b-shared',single:'b-single',studio:'b-studio',apart:'b-apart',various:'b-var'};
+const QUARTO_LB={shared:'Compartilhado',single:'Individual',studio:'Studio',apart:'Apartamento',various:'Vários'};
+const ST_LB={nao_contatado:'Não contatado',contatado:'Contatado',disponivel:'Disponível ✓',indisponivel:'Indisponível'};
+const ST_CL={nao_contatado:'stnc',contatado:'stct',disponivel:'stok',indisponivel:'stno'};
+const ST_CY={nao_contatado:'contatado',contatado:'disponivel',disponivel:'indisponivel',indisponivel:'nao_contatado'};
+const ST_ORD={disponivel:0,contatado:1,nao_contatado:2,indisponivel:3};
+
+// ── DADOS APARTAMENTOS — carregados via Netlify Function ─────────────────────
+// Fallback local caso a função não esteja disponível (ex: abrir HTML direto)
+const BASE_APARTMENTS_FALLBACK = [
+  {id:200,platformId:12,nome:"🏘 Quarto Individual em Piso Compartilhado — Travessera de Dalt (Gràcia)",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"single",pmin:650,pmax:650,disc:false,discInfo:null,avail:"2026-09-01",hb:false,notas:"PISO COMPARTILHADO — quarto privativo, áreas comuns partilhadas. Spotahome: verificado, contas incluídas. FGC Gràcia → Sant Cugat ~25 min direto.",email:null,tel:null,end:"Travessera de Dalt, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/barrio-de-gracia-rooms",source:"Spotahome"},
+  {id:201,platformId:12,nome:"🏘 Quarto em Piso de 8 Pessoas — Vila de Gràcia",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"single",pmin:636,pmax:839,disc:false,discInfo:null,avail:"2026-09-17",hb:false,notas:"PISO COMPARTILHADO — apto de 8 quartos, quarto privativo. Contas incluídas. FGC Gràcia → Sant Cugat ~25 min.",email:null,tel:null,end:"Vila de Gràcia, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/barrio-de-gracia-student-apartments",source:"Spotahome"},
+  {id:202,platformId:12,nome:"🏘 Quarto em Piso de 5 Pessoas — Vila de Gràcia (€670)",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"single",pmin:670,pmax:670,disc:false,discInfo:null,avail:"2026-07-03",hb:false,notas:"PISO COMPARTILHADO — quarto privativo. Contas incluídas. Disponível julho — boa janela antes do pico.",email:null,tel:null,end:"Vila de Gràcia, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/la-vila-de-gracia-rooms",source:"Spotahome"},
+  {id:203,platformId:12,nome:"🏘 Quarto em Piso de 5 Pessoas — Vila de Gràcia (€750)",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"single",pmin:750,pmax:750,disc:false,discInfo:null,avail:"2026-07-03",hb:false,notas:"PISO COMPARTILHADO — quarto privativo. Contas incluídas. Mesmo prédio/operador do anterior.",email:null,tel:null,end:"Vila de Gràcia, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/la-vila-de-gracia-rooms",source:"Spotahome"},
+  {id:204,platformId:12,nome:"🏘 Quarto em Piso Compartilhado — Sagrada Família, Eixample",tipo:"apartamento",bairro:"Eixample",local:"barcelona",quarto:"single",pmin:689,pmax:689,disc:false,discInfo:null,avail:"2026-09-16",hb:false,notas:"PISO COMPARTILHADO — quarto privativo. Spotahome: verificado, contas incluídas. FGC Provença → Sant Cugat ~30 min.",email:null,tel:null,end:"Sagrada Família, Eixample, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/sagrada-familia-student-apartments",source:"Spotahome"},
+  {id:205,platformId:12,nome:"🏘 Quarto Econômico em Piso Compartilhado — Eixample (€495)",tipo:"apartamento",bairro:"Eixample",local:"barcelona",quarto:"single",pmin:495,pmax:495,disc:false,discInfo:null,avail:"2026-09-16",hb:false,notas:"PISO COMPARTILHADO — quarto privativo. Spotahome: verificado, contas incluídas. Um dos preços mais baixos no Eixample.",email:null,tel:null,end:"Eixample, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/sagrada-familia-student-apartments",source:"Spotahome"},
+  {id:206,platformId:12,nome:"🏘 Quarto Econômico em Piso Compartilhado — Eixample (€455)",tipo:"apartamento",bairro:"Eixample",local:"barcelona",quarto:"single",pmin:455,pmax:455,disc:false,discInfo:null,avail:"2026-09-16",hb:false,notas:"PISO COMPARTILHADO — quarto privativo. Spotahome: verificado, contas incluídas. Menor preço encontrado no Eixample.",email:null,tel:null,end:"Eixample, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/sagrada-familia-student-apartments",source:"Spotahome"},
+  {id:207,platformId:34,nome:"🏢 Haaus Coliving — Quarto Privativo c/ Varanda (Eixample)",tipo:"apartamento",bairro:"Eixample",local:"barcelona",quarto:"single",pmin:850,pmax:850,disc:false,discInfo:null,avail:"2026-04-20",hb:false,notas:"COLIVING — quarto privativo só seu, áreas comuns compartilhadas. Tudo incluído: WiFi, limpeza semanal, manutenção 24h. FGC Provença a ~10 min.",email:null,tel:null,end:"Eixample, Barcelona",site:"https://www.haaus.eu/en/rooms",source:"Haaus Coliving"},
+  {id:208,platformId:35,nome:"🏢 Enter Coliving — Quarto Privativo (Gràcia / Eixample / Poblenou)",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"single",pmin:650,pmax:900,disc:false,discInfo:null,avail:"2026-09-01",hb:false,notas:"COLIVING — quarto privativo só seu, cozinha e sala compartilhadas. ~550 quartos em BCN, ocupação 95–99%. Estudantes 21–35 anos. Inclui eventos, limpeza, WiFi.",email:null,tel:null,end:"Gràcia | Eixample | Poblenou",site:"https://entercoliving.com/",source:"Enter Coliving"},
+  {id:209,platformId:36,nome:"🏢 Inèdit Barcelona — Quarto Privativo Coliving",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"single",pmin:700,pmax:950,disc:false,discInfo:null,avail:"2026-09-01",hb:false,notas:"COLIVING — quarto privativo só seu, áreas comuns compartilhadas. Para internacionais 25–40 anos. Inclui limpeza, WiFi, até €60 contas/mês. Ajuda com empadronamento e NIE.",email:null,tel:null,end:"Múltiplos bairros — Barcelona",site:"https://www.ineditbarcelona.com/",source:"Inèdit Barcelona"},
+  {id:210,platformId:12,nome:"🏠 SOLO — Studio em Vila de Gràcia (€1.200)",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"studio",pmin:1200,pmax:1200,disc:false,discInfo:null,avail:"2026-09-01",hb:false,notas:"APT SÓ SEU — studio mobilado, contas incluídas. Spotahome: verificado. FGC Gràcia → Sant Cugat ~25 min direto.",email:null,tel:null,end:"Vila de Gràcia, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/barrio-de-gracia-studios",source:"Spotahome"},
+  {id:211,platformId:12,nome:"🏠 SOLO — Studio c/ Jardim em Vila de Gràcia (€1.070)",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"studio",pmin:1070,pmax:1070,disc:false,discInfo:null,avail:"2026-07-01",hb:false,notas:"APT SÓ SEU — studio com jardim privativo, contas incluídas. Spotahome: verificado. Disponível julho. FGC Gràcia ~25 min.",email:null,tel:null,end:"Vila de Gràcia, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/barrio-de-gracia-studios",source:"Spotahome"},
+  {id:212,platformId:12,nome:"🏠 SOLO — Studio em Vila de Gràcia (€1.150)",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"studio",pmin:1150,pmax:1150,disc:false,discInfo:null,avail:"2026-07-01",hb:false,notas:"APT SÓ SEU — studio mobilado, contas incluídas. Spotahome: verificado. Disponível julho. FGC Gràcia ~25 min.",email:null,tel:null,end:"Vila de Gràcia, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/barrio-de-gracia-studios",source:"Spotahome"},
+  {id:213,platformId:12,nome:"🏠 SOLO — Studio com Varanda em Gràcia (€895)",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"studio",pmin:895,pmax:895,disc:false,discInfo:null,avail:"2026-08-01",hb:false,notas:"APT SÓ SEU — studio ensuite com varanda, contas incluídas. Spotahome. Disponível agosto. Menor preço para studio solo em Gràcia. FGC ~25 min.",email:null,tel:null,end:"Gràcia, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/barrio-de-gracia-studios",source:"Spotahome"},
+  {id:214,platformId:12,nome:"🏠 SOLO — Apartamento 1-Quarto Mobilado — Gràcia (€1.390)",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"apart",pmin:1390,pmax:1390,disc:false,discInfo:null,avail:"2026-09-02",hb:false,notas:"APT SÓ SEU — apartamento inteiro de 1 quarto, mobilado, contas incluídas. Spotahome: verificado. FGC Gràcia → Sant Cugat ~25 min.",email:null,tel:null,end:"Gràcia, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/gracia",source:"Spotahome"},
+  {id:215,platformId:12,nome:"🏠 SOLO — Apartamento 1-Quarto c/ Varanda — Gràcia (€1.250)",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"apart",pmin:1250,pmax:1250,disc:false,discInfo:null,avail:"2026-06-11",hb:false,notas:"APT SÓ SEU — apartamento inteiro de 1 quarto com varanda (Carrer de Martí), contas incluídas. Disponível junho. FGC Gràcia ~25 min.",email:null,tel:null,end:"Carrer de Martí, Gràcia, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/gracia",source:"Spotahome"},
+  {id:216,platformId:12,nome:"🏠 SOLO — Studios Eixample (€900–€1.200)",tipo:"apartamento",bairro:"Eixample",local:"barcelona",quarto:"studio",pmin:900,pmax:1200,disc:false,discInfo:null,avail:"2026-09-01",hb:false,notas:"APT SÓ SEU — faixa de preço para studios solos no Eixample. Entrar no Spotahome com filtro studios + setembro 2026. FGC Provença → Sant Cugat ~30 min.",email:null,tel:null,end:"Eixample, Barcelona",site:"https://www.spotahome.com/for-rent/barcelona/eixample-studios",source:"Spotahome"},
+  {id:217,platformId:17,nome:"🏠 SOLO — Apartamento 1-Quarto Eixample / Poblenou (€1.100–€1.500)",tipo:"apartamento",bairro:"Eixample",local:"barcelona",quarto:"apart",pmin:1100,pmax:1500,disc:false,discInfo:null,avail:"2026-09-01",hb:false,notas:"APT SÓ SEU — faixa de preço para 1-quartos solos em Eixample e Poblenou. Buscar em Idealista e Spotahome com filtro 1-bedroom + setembro 2026.",email:null,tel:null,end:"Eixample | Poblenou, Barcelona",site:"https://www.idealista.com/en/alquiler-viviendas/barcelona/eixample/con-de-un-dormitorio/",source:"Idealista"}
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let platforms = loadStorage('hplat', BASE_PLATFORMS);
+let apartments = loadStorage('hapts', BASE_APARTMENTS_FALLBACK);
+let _remoteLoaded = false;
+
+// Auto-migração: se os dados locais não têm platformId, são antigos — limpa e usa fallback
+(function autoMigrateApts(){
+  const semPlatformId = apartments.some(a => a.id >= 200 && a.id <= 217 && !a.platformId);
+  if(semPlatformId){
+    apartments = [...BASE_APARTMENTS_FALLBACK];
+    localStorage.removeItem('hapts');
+  }
+})();
+
+// Migração: garante que novas plataformas adicionadas ao BASE_PLATFORMS apareçam no localStorage
+(function migratePlatforms(){
+  const localIds = new Set(platforms.map(p=>p.id));
+  const novos = BASE_PLATFORMS.filter(p=>!localIds.has(p.id));
+  if(novos.length){platforms=[...platforms,...novos];savePlatforms();}
+})();
+
+// Navega para a aba de Plataformas e destaca o card da plataforma origem
+function goToPlatform(platformId, aptName){
+  switchTab('platforms');
+  setTimeout(()=>{
+    const el=document.getElementById('card-'+platformId);
+    if(el){
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.classList.add('via-highlight');
+      // Banner temporário no topo do card
+      const banner=document.createElement('div');
+      banner.className='via-banner';
+      banner.innerHTML=`📌 Plataforma do apartamento: <em>${aptName||'selecionado'}</em>`;
+      el.insertBefore(banner,el.firstChild);
+      setTimeout(()=>{
+        el.classList.remove('via-highlight');
+        banner.remove();
+      },2500);
+    }
+  },80);
+}
+
+// Busca apartamentos da Netlify Function (atualizado pelo Claude via MCP)
+async function loadRemoteApartments() {
+  try {
+    const res = await fetch('/.netlify/functions/apartments');
+    if (!res.ok) return;
+    const remote = await res.json();
+    if (!Array.isArray(remote) || remote.length === 0) return;
+    // Remote é sempre a fonte da verdade — substitui completamente os dados base
+    // Itens adicionados manualmente pelo usuário (ID > max do remote) são preservados
+    const remoteIds = new Set(remote.map(r => r.id));
+    const maxRemoteId = Math.max(...remote.map(r => r.id));
+    const userAdded = apartments.filter(a => !remoteIds.has(a.id) && a.id > maxRemoteId);
+    apartments = [...remote, ...userAdded];
+    saveApts();
+    _remoteLoaded = true;
+    renderAll();
+  } catch(e) {
+    // silently fail — usa dados locais
+  }
+}
+loadRemoteApartments();
+let extras = loadStorage('hextras3', {});
+let shortlist = loadStorage('hsl3', []);
+let previews = [];
+let addTarget = 'platform';
+let nextId = Math.max(100, ...platforms.map(d=>d.id), ...apartments.map(d=>d.id)) + 1;
+let currentTab = 'platforms';
+
+function loadStorage(key, fallback) {
+  try { const s=localStorage.getItem(key); if(s) return JSON.parse(s); } catch(e){}
+  return typeof fallback === 'function' ? fallback() : JSON.parse(JSON.stringify(fallback));
+}
+function save(key, val) { try{localStorage.setItem(key,JSON.stringify(val));}catch(e){} }
+function savePlatforms(){save('hplat',platforms)}
+function saveApts(){save('hapts',apartments)}
+function saveExtras(){save('hextras3',extras)}
+function saveSL(){save('hsl3',shortlist)}
+
+function getEx(id){return extras[id]||{status:'nao_contatado',userNotes:'',precoReal:null,availReal:null}}
+function setEx(id,k,v){if(!extras[id])extras[id]={status:'nao_contatado',userNotes:'',precoReal:null,availReal:null};extras[id][k]=v;saveExtras();}
+
+function pStr(h){if(h.pmin==null&&h.pmax==null)return null;if(h.pmin&&h.pmax)return`€${h.pmin}–${h.pmax}`;if(h.pmin)return`a partir de €${h.pmin}`;return`até €${h.pmax}`;}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',i===(tab==='platforms'?0:1))});
+  document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  renderAll();
+}
+
+// ── FILTER/SORT ───────────────────────────────────────────────────────────────
+function filterPlatforms(){
+  const q=document.getElementById('pq').value.toLowerCase();
+  const tipo=document.getElementById('ptipo').value;
+  const quarto=document.getElementById('pquarto').value;
+  const status=document.getElementById('pstatus').value;
+  const local=document.getElementById('plocal').value;
+  const pmax=parseInt(document.getElementById('pprice').value);
+  const avail=document.getElementById('pavail').value;
+  const disc=document.getElementById('pdisc').checked;
+  const hb=document.getElementById('phb').checked;
+  const fav=document.getElementById('pfav').checked;
+  return platforms.filter(h=>{
+    const ex=getEx(h.id);
+    if(tipo&&h.tipo!==tipo)return false;
+    if(quarto&&h.quarto!==quarto)return false;
+    if(status&&ex.status!==status)return false;
+    if(local){if(local==='sant_cugat'){if(h.local!=='sant_cugat')return false;}else if(h.bairro!==local)return false;}
+    if(pmax<2000&&h.pmin!=null&&h.pmin>pmax)return false;
+    if(avail&&h.avail&&h.avail>avail)return false;
+    if(disc&&!h.disc)return false;
+    if(hb&&!h.hb)return false;
+    if(fav&&!shortlist.includes(h.id))return false;
+    if(q&&!h.nome.toLowerCase().includes(q)&&!(h.notas||'').toLowerCase().includes(q)&&!(h.bairro||'').toLowerCase().includes(q))return false;
+    return true;
+  });
+}
+
+function sortData(arr, sortKey){
+  return [...arr].sort((a,b)=>{
+    if(sortKey==='preco')return(a.pmin||9999)-(b.pmin||9999);
+    if(sortKey==='status')return ST_ORD[getEx(a.id).status]-ST_ORD[getEx(b.id).status];
+    if(sortKey==='tipo')return a.tipo.localeCompare(b.tipo);
+    return a.nome.localeCompare(b.nome);
+  });
+}
+
+function filterApts(){
+  const q=document.getElementById('aq').value.toLowerCase();
+  const quarto=document.getElementById('aquarto').value;
+  const status=document.getElementById('astatus').value;
+  const bairro=document.getElementById('abairro').value;
+  const pmax=parseInt(document.getElementById('aprice').value);
+  const fav=document.getElementById('afav').checked;
+  return apartments.filter(h=>{
+    const ex=getEx(h.id);
+    if(quarto&&h.quarto!==quarto)return false;
+    if(status&&ex.status!==status)return false;
+    if(bairro&&h.bairro!==bairro)return false;
+    if(pmax<2000&&h.pmin!=null&&h.pmin>pmax)return false;
+    if(fav&&!shortlist.includes(h.id))return false;
+    if(q&&!h.nome.toLowerCase().includes(q)&&!(h.notas||'').toLowerCase().includes(q)&&!(h.bairro||'').toLowerCase().includes(q))return false;
+    return true;
+  });
+}
+
+// ── CARD BUILDER ──────────────────────────────────────────────────────────────
+function isSpecificListing(url){
+  if(!url)return false;
+  const searchPatterns=['/for-rent/barcelona/','/alquiler-habitacion/','/alquiler-viviendas/','/s/barcelona/','/en/rooms','/coliving-en/','/city-explorer/','/eixample-','/gracia-','/poblenou-','/sagrada-familia-','/la-vila-de-gracia-','/barrio-de-gracia-'];
+  return !searchPatterns.some(p=>url.includes(p));
+}
+
+function buildCard(h){
+  const ex=getEx(h.id);
+  const fav=shortlist.includes(h.id);
+  const ps=pStr(h);
+  const isApt=h.tipo==='apartamento';
+  const linkUrl=ex.urlReal||h.site;
+  const linkIsSpecific=!!(ex.urlReal||isSpecificListing(h.site));
+  const contacts=[];
+  if(linkUrl){
+    const label=isApt?(linkIsSpecific?'🔗 Ver anúncio':'🔍 Ver na plataforma'):'🔗 Site';
+    const style=isApt&&!linkIsSpecific?'color:var(--muted);font-style:italic':'';
+    const title=isApt&&!linkIsSpecific?'Link genérico — clique em ✏ para adicionar a URL do anúncio específico':'';
+    contacts.push(`<a href="${linkUrl}" target="_blank"${style?` style="${style}"`:''} title="${title}">${label}</a>`);
+  }
+  if(h.email)contacts.push(`<a href="mailto:${h.email}">✉ ${h.email}</a>`);
+  if(h.tel)contacts.push(`<span>📞 ${h.tel}</span>`);
+  if(!linkUrl&&!h.email&&!h.tel)contacts.push(`<span style="color:var(--faint)">Via plataforma</span>`);
+
+  let viaBadge='';
+  let viaLink='';
+  if(isApt&&h.platformId){
+    const plat=[...platforms,...BASE_PLATFORMS].find(p=>p.id===h.platformId);
+    if(plat){
+      const icon={plataforma:'🌐',coliving:'🏢',residencia:'🏫',agencia:'🏠',portal:'🔍'}[plat.tipo]||'🔗';
+      const aptName=h.nome.replace(/'/g,"\\'").substring(0,50);
+      viaBadge=`<span class="badge b-via" onclick="goToPlatform(${plat.id},'${aptName}')" title="Ver ${plat.nome} na aba de Plataformas" style="cursor:pointer">${icon} ${plat.nome}</span>`;
+      viaLink=`<span class="via-badge" onclick="goToPlatform(${plat.id},'${aptName}')">Ver plataforma →</span>`;
+    }
+  }
+
+  return`<div class="card${fav?' fav':''}${ex.status==='indisponivel'?' st-no':''}" id="card-${h.id}">
+  <div class="card-top">
+    <div style="flex:1;min-width:0">
+      <div class="badges">
+        <span class="badge ${TIPO_CL[h.tipo]||'b-apt'}">${TIPO_LB[h.tipo]||h.tipo}</span>
+        <span class="badge ${QUARTO_CL[h.quarto]||'b-var'}">${QUARTO_LB[h.quarto]||h.quarto}</span>
+        ${viaBadge}
+        ${!h.hb?'<span class="badge b-ext">externo</span>':''}
+      </div>
+      <div class="card-name">${h.nome}</div>
+      ${h.bairro?`<div style="font-size:11px;color:var(--faint);margin-top:2px">📍 ${h.bairro}</div>`:''}
+    </div>
+    <div class="card-r">
+      <button class="fav-btn${fav?' on':''}" onclick="toggleSL(${h.id})" title="Shortlist">♡</button>
+      <button class="status-btn ${ST_CL[ex.status]}" onclick="cycleStatus(${h.id})">${ST_LB[ex.status]}</button>
+    </div>
+  </div>
+  ${viaLink?`<div style="margin-top:2px">${viaLink}</div>`:''}
+  ${ps?`<div style="display:flex;align-items:baseline;gap:4px"><span class="price-tag">${ps}</span><span class="price-est">/mês estimado</span></div>`:''}
+  ${ex.precoReal?`<div style="font-size:12px;color:var(--green-t);font-weight:600">💬 Cotado: €${ex.precoReal}/mês</div>`:''}
+  ${h.avail?`<div style="font-size:11px;color:var(--muted)">📅 Disponível a partir de ${h.avail.split('-').reverse().join('/')}</div>`:''}
+  ${h.disc?`<div class="disc-box">⭐ <span>${h.discInfo}</span></div>`:''}
+  <p class="notes-txt">${h.notas||''}</p>
+  ${ex.userNotes?`<div class="user-notes">📝 ${ex.userNotes}</div>`:''}
+  <div class="contact-row">${contacts.join('')}<button class="btn btn-sm" style="margin-left:auto" onclick="toggleEdit(${h.id})">✏</button>${isApt?`<button class="btn btn-sm" onclick="deleteCard(${h.id})" title="Remover" style="color:var(--red-t)">🗑</button>`:''}</div>
+  <div class="edit-area" id="edit-${h.id}" style="display:none">
+    <textarea id="note-${h.id}" placeholder="Suas anotações (preço cotado, impressão, próximo passo...)">${ex.userNotes||''}</textarea>
+    <div class="edit-row">
+      <label>Preço real cotado (€)</label><input id="preal-${h.id}" type="number" placeholder="850" style="width:90px" value="${ex.precoReal||''}">
+      <label>Disponível a partir de</label><input id="avail-${h.id}" type="date" value="${ex.availReal||h.avail||''}">
+      ${isApt?`<label style="margin-top:6px;width:100%">🔗 URL do anúncio específico</label><input id="urlreal-${h.id}" type="url" placeholder="https://www.spotahome.com/apartment/..." style="width:100%;min-width:220px" value="${ex.urlReal||''}">`:``}
+      <button class="btn btn-sm btn-primary" onclick="saveNote(${h.id})">Salvar</button>
+      <button class="btn btn-sm" onclick="toggleEdit(${h.id})">Fechar</button>
+    </div>
+  </div>
+</div>`;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function updateStats(){
+  const isApts = currentTab === 'apartments';
+  const data = isApts ? apartments : platforms;
+  document.getElementById('s-total').textContent = data.length;
+  document.getElementById('s-total').nextElementSibling.textContent = isApts ? 'apartamentos' : 'plataformas';
+  document.getElementById('s-disc').textContent = data.filter(h => h.disc).length;
+  document.getElementById('s-ct').textContent = data.filter(h => (extras[h.id]||{}).status === 'contatado').length;
+  document.getElementById('s-ok').textContent = data.filter(h => (extras[h.id]||{}).status === 'disponivel').length;
+  document.getElementById('s-sl').textContent = data.filter(h => shortlist.includes(h.id)).length;
+  const slCount = data.filter(h => shortlist.includes(h.id)).length;
+  document.getElementById('sub-txt').textContent = isApts
+    ? `${apartments.length} apartamentos · ${slCount} na shortlist`
+    : `${platforms.length} plataformas/residências · ${slCount} na shortlist`;
+}
+
+function updateSLBox(){
+  const box=document.getElementById('sl-tags');
+  const items=[...platforms,...apartments].filter(h=>shortlist.includes(h.id));
+  if(!items.length){box.innerHTML='<span style="font-size:12px;color:var(--blue-t);opacity:.7">Clique no ♡ para favoritar.</span>';return;}
+  box.innerHTML=items.map(h=>`<div class="sl-tag">${h.nome}<button onclick="removeSL(${h.id})">×</button></div>`).join('');
+}
+
+function renderPlatforms(){
+  const filtered=sortData(filterPlatforms(),document.getElementById('psort').value);
+  const grid=document.getElementById('p-grid');
+  const empty=document.getElementById('p-empty');
+  document.getElementById('p-count').textContent=filtered.length+' resultado'+(filtered.length!==1?'s':'');
+  if(!filtered.length){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  grid.innerHTML=filtered.map(h=>buildCard(h)).join('');
+}
+
+function renderApts(){
+  const filtered=sortData(filterApts(),document.getElementById('asort').value);
+  const grid=document.getElementById('a-grid');
+  const empty=document.getElementById('a-empty');
+  document.getElementById('a-count').textContent=filtered.length+' resultado'+(filtered.length!==1?'s':'');
+  if(!filtered.length){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  grid.innerHTML=filtered.map(h=>buildCard(h)).join('');
+}
+
+function renderAll(){updateStats();updateSLBox();renderPlatforms();renderApts();}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+function toggleSL(id){
+  shortlist=shortlist.includes(id)?shortlist.filter(x=>x!==id):[...shortlist,id];
+  saveSL();renderAll();
+}
+function removeSL(id){shortlist=shortlist.filter(x=>x!==id);saveSL();renderAll();}
+function cycleStatus(id){setEx(id,'status',ST_CY[getEx(id).status]);renderAll();}
+function toggleEdit(id){const el=document.getElementById('edit-'+id);el.style.display=el.style.display==='none'?'flex':'none';}
+function saveNote(id){
+  setEx(id,'userNotes',document.getElementById('note-'+id).value);
+  setEx(id,'precoReal',document.getElementById('preal-'+id).value||null);
+  setEx(id,'availReal',document.getElementById('avail-'+id).value||null);
+  const urlInput=document.getElementById('urlreal-'+id);
+  if(urlInput)setEx(id,'urlReal',urlInput.value||null);
+  renderAll();
+}
+function deleteCard(id){
+  if(!confirm('Remover este card?'))return;
+  platforms=platforms.filter(h=>h.id!==id);
+  apartments=apartments.filter(h=>h.id!==id);
+  savePlatforms();saveApts();
+  shortlist=shortlist.filter(x=>x!==id);saveSL();
+  renderAll();
+}
+
+function copiarContatos(){
+  const items=[...platforms,...apartments].filter(h=>shortlist.includes(h.id));
+  if(!items.length){alert('Nenhum item na shortlist.');return;}
+  const txt=items.map(h=>{
+    const lines=[`${h.nome} (${TIPO_LB[h.tipo]||h.tipo})`];
+    if(h.bairro)lines.push(`  Local: ${h.bairro}`);
+    if(h.email)lines.push(`  Email: ${h.email}`);
+    if(h.tel)lines.push(`  Tel: ${h.tel}`);
+    if(h.site)lines.push(`  Site: ${h.site}`);
+    if(h.disc)lines.push(`  Desconto: ${h.discInfo}`);
+    return lines.join('\n');
+  }).join('\n\n');
+  navigator.clipboard&&navigator.clipboard.writeText(txt).then(()=>alert('Contatos copiados!'));
+}
+
+// ── ADD MODAL ─────────────────────────────────────────────────────────────────
+function openAddModal(target){
+  addTarget=target;
+  document.getElementById('add-modal-title').textContent=target==='apartment'?'+ Adicionar Apartamento':'+ Adicionar Plataforma/Residência';
+  document.getElementById('add-modal').classList.add('show');
+}
+function closeAddModal(){document.getElementById('add-modal').classList.remove('show');}
+function saveNewListing(){
+  const nome=document.getElementById('m-nome').value.trim();
+  if(!nome){alert('Nome é obrigatório.');return;}
+  const novo={id:nextId++,nome,tipo:document.getElementById('m-tipo').value,bairro:document.getElementById('m-bairro').value||'Barcelona',local:'barcelona',quarto:document.getElementById('m-quarto').value,pmin:parseInt(document.getElementById('m-pmin').value)||null,pmax:parseInt(document.getElementById('m-pmax').value)||null,disc:!!document.getElementById('m-disc').value,discInfo:document.getElementById('m-disc').value||null,avail:document.getElementById('m-avail').value||null,hb:false,notas:document.getElementById('m-notas').value||'',email:document.getElementById('m-email').value||null,tel:document.getElementById('m-tel').value||null,end:document.getElementById('m-end').value||null,site:document.getElementById('m-site').value||null};
+  if(addTarget==='apartment'){apartments.push(novo);saveApts();}
+  else{platforms.push(novo);savePlatforms();}
+  closeAddModal();
+  ['m-nome','m-bairro','m-pmin','m-pmax','m-avail','m-email','m-tel','m-end','m-notas','m-disc','m-site'].forEach(id=>{document.getElementById(id).value='';});
+  renderAll();
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────────
+function openSettings(){
+  const key=localStorage.getItem('claudeApiKey')||'';
+  document.getElementById('api-key-input').value=key;
+  const cfg=loadStorage('hcfg',{pmax:1000,quarto:'single',bairro:'Gràcia, Eixample, Poblenou',date:'2026-09-10'});
+  document.getElementById('cfg-pmax').value=cfg.pmax||1000;
+  document.getElementById('cfg-quarto').value=cfg.quarto||'single';
+  document.getElementById('cfg-bairro').value=cfg.bairro||'Gràcia, Eixample, Poblenou';
+  document.getElementById('cfg-date').value=cfg.date||'2026-09-10';
+  updateKeyStatus(key);
+  document.getElementById('settings-modal').classList.add('show');
+}
+function closeSettings(){document.getElementById('settings-modal').classList.remove('show');}
+function updateKeyStatus(key){
+  const el=document.getElementById('key-status');
+  if(key&&key.startsWith('sk-ant')){el.className='key-status key-ok';el.textContent='✅ Chave configurada ('+key.substring(0,12)+'...)';}
+  else{el.className='key-status key-missing';el.textContent='🔑 Nenhuma chave configurada';}
+}
+document.getElementById('api-key-input').addEventListener('input',e=>updateKeyStatus(e.target.value));
+function saveSettings(){
+  const key=document.getElementById('api-key-input').value.trim();
+  if(key)localStorage.setItem('claudeApiKey',key);
+  save('hcfg',{pmax:document.getElementById('cfg-pmax').value,quarto:document.getElementById('cfg-quarto').value,bairro:document.getElementById('cfg-bairro').value,date:document.getElementById('cfg-date').value});
+  closeSettings();
+  alert('Configurações salvas!');
+}
+function clearApiKey(){if(confirm('Apagar a API key?')){localStorage.removeItem('claudeApiKey');updateKeyStatus('');}}
+
+// ── PROMPT GRATUITO ───────────────────────────────────────────────────────────
+function gerarPromptGratis(){
+  const cfg=loadStorage('hcfg',{pmax:1000,quarto:'single',bairro:'Gràcia, Eixample, Poblenou',date:'2026-09-10'});
+function gerarPromptGratis(){
+  const cfg=loadStorage('hcfg',{pmax:1500,quarto:'single',bairro:'',date:'2026-09-10'});
+  const platNames=platforms.map(p=>p.nome).join(', ');
+  const bairros='Gràcia, Eixample (Esquerra e Dreta), Poblenou, Sarrià-Sant Gervasi, Sants, Poble Sec, El Born, Sant Antoni, Les Corts, Collblanc, L\'Hospitalet de Llobregat, Sant Cugat del Vallès';
+  const tipo=cfg.quarto==='single'?'quarto individual em piso':cfg.quarto==='shared'?'quarto compartilhado':cfg.quarto==='studio'?'studio/apartamento solo':cfg.quarto==='apart'?'apartamento inteiro':'qualquer tipo';
+  const prompt=`Preciso encontrar moradia em Barcelona para setembro de 2026. Contexto: sou estudante internacional do MSc ESADE Business School em Sant Cugat del Vallès, programa de 13 meses (set/2026 – out/2027).
+
+Perfil:
+- Orçamento: até €1.500/mês (PRIORIDADE ABSOLUTA: opções mais baratas primeiro)
+- Tipo preferido: ${tipo}
+- Bairros aceitos (todos válidos): ${bairros}
+- Disponível a partir de: ${cfg.date||'2026-09-10'}
+- Transporte crítico: FGC linha S5/S55 conecta Barcelona a Sant Cugat (~25 min). Bairros com FGC direto: Gràcia, Sarrià, Sant Gervasi, Les Corts. Outros bairros requerem baldeação.
+
+Por favor:
+1. Pesquise listings ATUAIS e REAIS em TODAS estas plataformas: ${platNames}
+2. Traga 8–12 opções concretas ORDENADAS DO MAIS BARATO AO MAIS CARO com: nome/descrição, bairro, preço/mês, tipo (piso compartilhado / coliving / studio solo / apt solo), link do anúncio, tempo de transporte até Sant Cugat e qual linha usar
+3. Para cada opção indique claramente: é piso compartilhado com outras pessoas? ou apartamento/studio só meu?
+4. Dê uma recomendação final com os 3 melhores custo-benefício considerando preço + transporte`;
+
+  document.getElementById('prompt-txt').value=prompt;
+  document.getElementById('prompt-box-wrap').style.display='block';
+  document.getElementById('prompt-box-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function copiarPrompt(){
+  const txt=document.getElementById('prompt-txt').value;
+  navigator.clipboard&&navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.querySelector('#prompt-box-wrap .btn-primary');
+    btn.textContent='✅ Copiado!';
+    setTimeout(()=>{btn.textContent='📋 Copiar prompt';},2000);
+  });
+}
+
+// ── CLAUDE API SEARCH ─────────────────────────────────────────────────────────
+async function searchWithClaude(){
+  const key=localStorage.getItem('claudeApiKey');
+  if(!key||!key.startsWith('sk-ant')){
+    alert('Configure sua API key primeiro. Clique em ⚙ API Key no painel azul.');
+    openSettings();return;
+  }
+  const cfg=loadStorage('hcfg',{pmax:1000,quarto:'single',bairro:'Gràcia, Eixample, Poblenou',date:'2026-09-10'});
+  const loading=document.getElementById('loading');
+  const loadTxt=document.getElementById('loading-txt');
+  loading.classList.add('show');
+  const msgs=['🔍 Claude está buscando em Idealista e Fotocasa...','🏠 Procurando quartos e studios em Barcelona...','📋 Organizando os resultados encontrados...'];
+  let mi=0;loadTxt.textContent=msgs[0];
+  const intv=setInterval(()=>{mi=(mi+1)%msgs.length;loadTxt.textContent=msgs[mi];},3000);
+
+  const systemPrompt=`Você é um assistente especializado em busca de moradia em Barcelona para estudantes internacionais. Pesquise e retorne resultados REAIS e ATUAIS de listings disponíveis, ordenados do mais barato ao mais caro. Retorne APENAS um array JSON válido, sem texto adicional, sem markdown, sem backticks. Cada objeto deve ter: nome (string descritiva), bairro (string), quarto (shared|single|studio|apart), pmin (number, preço mínimo mensal em EUR), pmax (number, preço máximo), url (string, URL do anúncio ou site da plataforma), notas (string, tipo de moradia + características principais + tempo de transporte até Sant Cugat + linha FGC/metro), avail (string YYYY-MM-DD), source (string, nome da plataforma). PRIORIZE sempre as opções mais baratas.`;
+
+  const platNames=platforms.map(p=>p.nome).join(', ');
+  const bairros='Gràcia, Eixample (Esquerra e Dreta), Poblenou, Sarrià-Sant Gervasi, Sants, Poble Sec, El Born, Sant Antoni, Les Corts, Collblanc, L\'Hospitalet, Sant Cugat del Vallès';
+  const userMsg=`Busque moradia em Barcelona disponível a partir de ${cfg.date} para estudante internacional do MSc ESADE Business School em Sant Cugat (programa 13 meses). Tipo preferido: "${cfg.quarto}", orçamento até €1500/mês (PRIORIDADE: opções mais baratas primeiro). Bairros aceitos: ${bairros}. Para cada opção indique claramente se é piso compartilhado, coliving, studio solo ou apartamento inteiro. Pesquise em TODAS estas plataformas: ${platNames}. Traga 8-12 opções reais e atuais ordenadas por preço crescente, com URL quando possível.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-beta':'web-search-2025-03-05',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:3000,
+        system:systemPrompt,
+        tools:[{type:'web_search_20250305',name:'web_search',max_uses:5}],
+        messages:[{role:'user',content:userMsg}]
+      })
+    });
+    clearInterval(intv);
+    loading.classList.remove('show');
+    if(!res.ok){
+      const err=await res.json();
+      if(res.status===401)alert('API key inválida. Verifique em console.anthropic.com.');
+      else alert('Erro da API: '+(err.error?.message||res.status));
+      return;
+    }
+    const data=await res.json();
+    // Extract text from response (Claude may have multiple content blocks)
+    let rawText='';
+    for(const block of data.content){
+      if(block.type==='text')rawText+=block.text;
+    }
+    // Parse JSON from response
+    let results;
+    try{
+      // Try direct parse first
+      const match=rawText.match(/\[[\s\S]*\]/);
+      results=JSON.parse(match?match[0]:rawText);
+    }catch(e){
+      console.error('Parse error:',rawText);
+      alert('Claude respondeu mas não consegui interpretar os resultados. Tente novamente ou verifique o console.');
+      return;
+    }
+    if(!Array.isArray(results)||results.length===0){
+      alert('Nenhum resultado encontrado. Tente novamente.');
+      return;
+    }
+    showPreviews(results);
+  }catch(e){
+    clearInterval(intv);
+    loading.classList.remove('show');
+    if(e.name==='TypeError'&&e.message.includes('fetch')){
+      alert('Erro de CORS: seu browser bloqueou a chamada direta à API. Isso pode acontecer em algumas configurações. Alternativa: use o botão "Gerar prompt" na aba de plataformas para pesquisar manualmente no Claude.ai.');
+    }else{
+      alert('Erro: '+e.message);
+    }
+  }
+}
+
+// ── PREVIEWS ──────────────────────────────────────────────────────────────────
+function showPreviews(results){
+  previews=results.map((r,i)=>({...r,_pid:i}));
+  const section=document.getElementById('preview-section');
+  const grid=document.getElementById('preview-grid');
+  document.getElementById('preview-count').textContent=`— ${results.length} encontrados`;
+  grid.innerHTML=results.map((r,i)=>`
+    <div class="preview-card" id="prev-${i}">
+      <button class="btn btn-sm btn-success add-btn" onclick="addPreview(${i})">+ Add</button>
+      <div class="badges" style="margin-bottom:4px">
+        <span class="badge ${QUARTO_CL[r.quarto]||'b-var'}">${QUARTO_LB[r.quarto]||r.quarto}</span>
+        <span class="badge b-ext">${r.source||'externo'}</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:3px;padding-right:50px">${r.nome}</div>
+      ${r.bairro?`<div style="font-size:11px;color:var(--faint)">📍 ${r.bairro}</div>`:''}
+      ${r.pmin||r.pmax?`<div class="price-tag" style="font-size:13px;margin-top:4px">€${r.pmin||'?'}–${r.pmax||'?'}/mês</div>`:''}
+      ${r.notas?`<p class="notes-txt" style="margin-top:5px">${r.notas}</p>`:''}
+      ${r.url?`<a href="${r.url}" target="_blank" style="font-size:11px;display:block;margin-top:5px">🔗 Ver anúncio</a>`:''}
+    </div>
+  `).join('');
+  section.classList.add('show');
+  section.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function addPreview(i){
+  const r=previews[i];
+  const novo={id:nextId++,nome:r.nome||'Apartamento encontrado',tipo:'apartamento',bairro:r.bairro||'Barcelona',local:'barcelona',quarto:r.quarto||'single',pmin:r.pmin||null,pmax:r.pmax||null,disc:false,discInfo:null,avail:r.avail||null,hb:false,notas:r.notas||'',email:null,tel:null,end:null,site:r.url||null,source:r.source};
+  apartments.push(novo);saveApts();renderAll();
+  document.getElementById('prev-'+i).style.opacity='.4';
+  document.getElementById('prev-'+i).querySelector('.add-btn').textContent='✓ Adicionado';
+  document.getElementById('prev-'+i).querySelector('.add-btn').disabled=true;
+}
+
+function addAllPreviews(){
+  previews.forEach((_,i)=>addPreview(i));
+  setTimeout(clearPreviews,800);
+}
+
+function clearPreviews(){
+  document.getElementById('preview-section').classList.remove('show');
+  previews=[];
+}
+
+// ── EXPORT/IMPORT ─────────────────────────────────────────────────────────────
+function exportAll(){
+  const blob=new Blob([JSON.stringify({platforms,apartments,extras,shortlist},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='moradia_barcelona.json';a.click();
+}
+function importAll(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.platforms){platforms=d.platforms;savePlatforms();}
+      if(d.apartments){apartments=d.apartments;saveApts();}
+      if(d.extras){extras=d.extras;saveExtras();}
+      if(d.shortlist){shortlist=d.shortlist;saveSL();}
+      renderAll();alert('Dados importados!');
+    }catch(err){alert('Arquivo inválido.');}
+  };r.readAsText(f);
+}
+
+// ── FILTER LISTENERS ──────────────────────────────────────────────────────────
+['pq','ptipo','pquarto','pstatus','plocal','pdisc','phb','pfav','psort','pprice','pavail'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',renderPlatforms);
+  document.getElementById(id).addEventListener('change',renderPlatforms);
+});
+['aq','aquarto','astatus','abairro','afav','asort','aprice'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',renderApts);
+  document.getElementById(id).addEventListener('change',renderApts);
+});
+
+renderAll();
+</script>
+</div><!-- /app -->
+
+<script>
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+const PWD_HASH = "e1f4b3c2a5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2"; // placeholder, set below
+const CORRECT = "C4et4n0cunh$";
+
+function checkPwd(){
+  const val = document.getElementById('pwd-input').value;
+  const err = document.getElementById('login-err');
+  if(val === CORRECT){
+    localStorage.setItem('auth_ok','1');
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    err.style.display='none';
+  } else {
+    err.style.display='block';
+    document.getElementById('pwd-input').value='';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+// Auto-login if already authenticated this session
+if(localStorage.getItem('auth_ok')==='1'){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+</script>
+
+</body>
+</html>
