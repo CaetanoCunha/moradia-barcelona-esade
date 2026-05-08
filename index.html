@@ -861,8 +861,6 @@ function clearApiKey(){if(confirm('Apagar a API key?')){localStorage.removeItem(
 
 // ── PROMPT GRATUITO ───────────────────────────────────────────────────────────
 function gerarPromptGratis(){
-  const cfg=loadStorage('hcfg',{pmax:1000,quarto:'single',bairro:'Gràcia, Eixample, Poblenou',date:'2026-09-10'});
-function gerarPromptGratis(){
   const cfg=loadStorage('hcfg',{pmax:1500,quarto:'single',bairro:'',date:'2026-09-10'});
   const platNames=platforms.map(p=>p.nome).join(', ');
   const bairros='Gràcia, Eixample (Esquerra e Dreta), Poblenou, Sarrià-Sant Gervasi, Sants, Poble Sec, El Born, Sant Antoni, Les Corts, Collblanc, L\'Hospitalet de Llobregat, Sant Cugat del Vallès';
