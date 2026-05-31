@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bairros de Barcelona — Comparação ESADE 2026/27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --terracota: #b9543a;
+    --terracota-dark: #8a3e2a;
+    --ocre: #c89968;
+    --creme: #f4ecdc;
+    --creme-soft: #ede2cd;
+    --tinta: #1a1614;
+    --tinta-soft: #3a302a;
+    --cinza: #6b5e54;
+    --linha: #d4c5a8;
+    --verde: #3d6b4f;
+    --vermelho: #8a2a2a;
+    --amarelo: #c89121;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--creme);
+    color: var(--tinta);
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* === GRAIN OVERLAY === */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.07 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.18;
+    mix-blend-mode: multiply;
+  }
+
+  /* === TYPOGRAPHY === */
+  h1, h2, h3, h4 { font-family: 'Fraunces', serif; font-weight: 500; letter-spacing: -0.02em; }
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; letter-spacing: -0.01em; }
+  .sans { font-family: 'Inter', sans-serif; }
+
+  /* === LAYOUT === */
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+
+  /* === HERO === */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--linha);
+    position: relative;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 56px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--cinza);
+  }
+
+  .hero-meta span { display: flex; align-items: center; gap: 8px; }
+  .hero-meta .dot {
+    width: 6px; height: 6px;
+    background: var(--terracota);
+    border-radius: 50%;
+  }
+
+  .hero-title {
+    font-size: clamp(48px, 8vw, 96px);
+    line-height: 0.92;
+    font-weight: 400;
+    color: var(--tinta);
+    margin-bottom: 32px;
+    max-width: 900px;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--terracota);
+    font-weight: 300;
+  }
+
+  .hero-sub {
+    max-width: 640px;
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--tinta-soft);
+    font-weight: 300;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    margin-top: 64px;
+    padding-top: 48px;
+    border-top: 1px solid var(--linha);
+  }
+
+  .stat-num {
+    font-size: 56px;
+    font-weight: 300;
+    color: var(--terracota);
+    line-height: 1;
+    font-feature-settings: "lnum";
+  }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--cinza);
+    margin-top: 12px;
+  }
+
+  /* === SECTION === */
+  section { padding: 80px 0; border-bottom: 1px solid var(--linha); }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--terracota);
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1;
+    font-weight: 400;
+    margin-bottom: 16px;
+    max-width: 900px;
+  }
+
+  .section-lede {
+    max-width: 640px;
+    font-size: 18px;
+    color: var(--tinta-soft);
+    margin-bottom: 56px;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  /* === RANKING === */
+  .ranking {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .rank-item {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    align-items: center;
+    gap: 32px;
+    padding: 28px 0;
+    border-top: 1px solid var(--linha);
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .rank-item:last-child { border-bottom: 1px solid var(--linha); }
+
+  .rank-item:hover {
+    background: var(--creme-soft);
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .rank-num {
+    font-family: 'Fraunces', serif;
+    font-size: 72px;
+    font-weight: 200;
+    line-height: 1;
+    color: var(--terracota);
+    font-feature-settings: "lnum";
+  }
+
+  .rank-item.gold .rank-num { color: var(--terracota-dark); }
+
+  .rank-info h3 {
+    font-size: 32px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .rank-info p {
+    font-size: 15px;
+    color: var(--tinta-soft);
+    max-width: 580px;
+    line-height: 1.5;
+  }
+
+  .rank-meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--cinza);
+  }
+
+  .rank-meta .price {
+    display: block;
+    font-size: 22px;
+    color: var(--tinta);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  /* === TABLE === */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 0 -32px;
+    padding: 0 32px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 16px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--cinza);
+    border-bottom: 2px solid var(--tinta);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+  }
+
+  thead th:hover { color: var(--terracota); }
+  thead th.sort-active { color: var(--terracota); }
+  thead th.sort-active::after { content: ' ↓'; }
+  thead th.sort-asc.sort-active::after { content: ' ↑'; }
+
+  tbody td {
+    padding: 18px 12px;
+    border-bottom: 1px solid var(--linha);
+    vertical-align: middle;
+  }
+
+  tbody tr { transition: background 0.2s; }
+  tbody tr:hover { background: var(--creme-soft); }
+
+  tbody tr.discarded { opacity: 0.45; }
+  tbody tr.discarded:hover { opacity: 0.8; }
+
+  td.bairro {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--tinta);
+  }
+
+  td.bairro .league-tag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    border-radius: 2px;
+    vertical-align: middle;
+    text-transform: uppercase;
+  }
+
+  .league-A { background: var(--terracota); color: var(--creme); }
+  .league-B { background: var(--verde); color: var(--creme); }
+  .league-C { background: var(--ocre); color: var(--tinta); }
+  .league-X { background: var(--tinta); color: var(--creme); opacity: 0.4; }
+
+  td.num { font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+
+  /* Pill ratings */
+  .pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .pill-5 { background: var(--terracota); color: var(--creme); }
+  .pill-4 { background: var(--ocre); color: var(--tinta); }
+  .pill-3 { background: var(--creme-soft); color: var(--tinta-soft); border: 1px solid var(--linha); }
+  .pill-2 { background: transparent; color: var(--cinza); border: 1px solid var(--linha); }
+  .pill-1 { background: transparent; color: var(--cinza); border: 1px dashed var(--linha); opacity: 0.7; }
+
+  /* === FILTERS === */
+  .filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--cinza);
+    margin-right: 8px;
+  }
+
+  .filter-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--linha);
+    color: var(--tinta-soft);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+
+  .filter-btn:hover { border-color: var(--tinta); }
+  .filter-btn.active { background: var(--tinta); color: var(--creme); border-color: var(--tinta); }
+
+  /* === LEAGUES === */
+  .leagues {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .league {
+    padding: 40px 32px;
+    border: 1px solid var(--linha);
+    background: var(--creme-soft);
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .league:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(26, 22, 20, 0.08);
+  }
+
+  .league-letter {
+    position: absolute;
+    top: 24px; right: 32px;
+    font-family: 'Fraunces', serif;
+    font-size: 120px;
+    font-weight: 200;
+    line-height: 1;
+    color: var(--linha);
+    z-index: 0;
+  }
+
+  .league-A-card { border-top: 4px solid var(--terracota); }
+  .league-B-card { border-top: 4px solid var(--verde); }
+  .league-C-card { border-top: 4px solid var(--ocre); }
+
+  .league-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--cinza);
+    margin-bottom: 12px;
+    position: relative; z-index: 1;
+  }
+
+  .league h3 {
+    font-size: 28px;
+    margin-bottom: 8px;
+    position: relative; z-index: 1;
+  }
+
+  .league-tagline {
+    font-style: italic;
+    color: var(--tinta-soft);
+    margin-bottom: 24px;
+    font-size: 15px;
+    position: relative; z-index: 1;
+  }
+
+  .league-bairros { position: relative; z-index: 1; }
+
+  .league-bairros .bairro-item {
+    padding: 12px 0;
+    border-top: 1px solid var(--linha);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .bairro-item .nome {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .bairro-item .stats {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cinza);
+  }
+
+  /* === FGC INSIGHT === */
+  .insight {
+    background: var(--tinta);
+    color: var(--creme);
+    margin: 0;
+    padding: 100px 0;
+    border-bottom: none;
+  }
+
+  .insight .section-title { color: var(--creme); }
+  .insight .section-lede { color: var(--creme-soft); }
+  .insight .section-num { color: var(--ocre); }
+
+  .insight-quote {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(28px, 4vw, 44px);
+    line-height: 1.2;
+    color: var(--creme);
+    max-width: 900px;
+    margin: 48px 0;
+    border-left: 4px solid var(--terracota);
+    padding-left: 32px;
+  }
+
+  .fgc-tiers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 48px;
+  }
+
+  .tier {
+    padding: 32px 24px;
+    border: 1px solid rgba(244, 236, 220, 0.15);
+    background: rgba(244, 236, 220, 0.03);
+  }
+
+  .tier-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .tier h4 {
+    font-size: 18px;
+    color: var(--creme);
+    margin-bottom: 12px;
+  }
+
+  .tier p {
+    font-size: 14px;
+    color: var(--creme-soft);
+    line-height: 1.5;
+    opacity: 0.85;
+  }
+
+  .tier .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .tier-1 .label { color: #6ec48d; }
+  .tier-2 .label { color: var(--ocre); }
+  .tier-3 .label { color: #d97b6b; }
+
+  /* === DISCARDED === */
+  .discarded-section {
+    background: var(--creme-soft);
+  }
+
+  .discarded-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .discarded-card {
+    padding: 28px 32px;
+    border: 1px solid var(--linha);
+    background: var(--creme);
+    position: relative;
+  }
+
+  .discarded-card::before {
+    content: '×';
+    position: absolute;
+    top: 16px; right: 24px;
+    font-size: 40px;
+    color: var(--vermelho);
+    line-height: 1;
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+  }
+
+  .discarded-card h4 {
+    font-size: 22px;
+    margin-bottom: 8px;
+    color: var(--tinta);
+  }
+
+  .discarded-card .reason {
+    font-size: 14px;
+    color: var(--tinta-soft);
+    line-height: 1.5;
+  }
+
+  /* === NEXT STEPS === */
+  .next-steps {
+    background: var(--tinta);
+    color: var(--creme);
+  }
+
+  .next-steps .section-title { color: var(--creme); }
+  .next-steps .section-num { color: var(--ocre); }
+
+  .checklist {
+    list-style: none;
+    max-width: 760px;
+  }
+
+  .checklist li {
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(244, 236, 220, 0.15);
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    align-items: start;
+    gap: 16px;
+    font-size: 17px;
+    color: var(--creme-soft);
+  }
+
+  .checklist .check {
+    width: 22px; height: 22px;
+    border: 1px solid var(--ocre);
+    border-radius: 2px;
+    margin-top: 2px;
+  }
+
+  .resources {
+    margin-top: 64px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .resources a {
+    padding: 16px 28px;
+    border: 1px solid var(--ocre);
+    color: var(--creme);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    transition: all 0.2s;
+  }
+
+  .resources a:hover {
+    background: var(--ocre);
+    color: var(--tinta);
+  }
+
+  /* === FOOTER === */
+  footer {
+    padding: 48px 0;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--cinza);
+    text-transform: uppercase;
+  }
+
+  /* === MOBILE === */
+  @media (max-width: 768px) {
+    .container { padding: 0 20px; }
+    .hero { padding: 48px 0 40px; }
+    .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .stat-num { font-size: 40px; }
+    section { padding: 56px 0; }
+    .rank-item { grid-template-columns: 60px 1fr; gap: 16px; padding: 20px 0; }
+    .rank-num { font-size: 48px; }
+    .rank-info h3 { font-size: 22px; }
+    .rank-meta { display: none; }
+    .leagues, .discarded-grid, .fgc-tiers { grid-template-columns: 1fr; }
+    .table-wrap { margin: 0 -20px; padding: 0 20px; }
+    tbody td { padding: 12px 8px; font-size: 13px; }
+    thead th { padding: 12px 8px; font-size: 9px; }
+    td.bairro { font-size: 14px; }
+    td.bairro .league-tag { display: block; margin: 4px 0 0 0; width: fit-content; }
+    .insight-quote { font-size: 22px; padding-left: 20px; }
+    .league-letter { font-size: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span><span class="dot"></span>análise estratégica</span>
+      <span>caetano · maio 2026</span>
+      <span>esade msc 2026/27</span>
+    </div>
+
+    <h1 class="hero-title">
+      Onde morar em<br/>
+      <em>Barcelona</em>.
+    </h1>
+
+    <p class="hero-sub">
+      Comparação estruturada de 10 bairros para os 13 meses do MSc Innovation & Entrepreneurship na ESADE Sant Cugat. Variáveis: commute, comunidade, custo, vibe e custo-benefício real.
+    </p>
+
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">10</div>
+        <div class="stat-label">bairros analisados</div>
+      </div>
+      <div>
+        <div class="stat-num">6</div>
+        <div class="stat-label">viáveis</div>
+      </div>
+      <div>
+        <div class="stat-num">4</div>
+        <div class="stat-label">descartados</div>
+      </div>
+      <div>
+        <div class="stat-num">€1k</div>
+        <div class="stat-label">teto mensal</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- RANKING -->
+<section id="ranking">
+  <div class="container">
+    <div class="section-num">01 — RANKING</div>
+    <h2 class="section-title">Os seis viáveis, em ordem.</h2>
+    <p class="section-lede">Ordenação considerando equilíbrio entre commute, comunidade ESADE, qualidade de vida e custo-benefício para o meu perfil específico (consultor em transição, foco em mestrado + venture building).</p>
+
+    <div class="ranking">
+      <div class="rank-item gold">
+        <div class="rank-num">01</div>
+        <div class="rank-info">
+          <h3>Eixample Esquerra</h3>
+          <p>Equilíbrio máximo. FGC Provença na porta, comunidade ESADE concentrada, centralidade urbana sem comprometer commute. Pago um prêmio razoável por não ter trade-off.</p>
+        </div>
+        <div class="rank-meta">
+          <span class="price">€875</span>
+          25–30 min
+        </div>
+      </div>
+
+      <div class="rank-item">
+        <div class="rank-num">02</div>
+        <div class="rank-info">
+          <h3>Les Corts</h3>
+          <p>Eficiência operacional pura. Commute imbatível (15–25 min), segurança altíssima, infraestrutura excelente. Sacrifica vibe em troca de tempo útil para mestrado, ITEC e Mérito remoto.</p>
+        </div>
+        <div class="rank-meta">
+          <span class="price">€800</span>
+          15–25 min
+        </div>
+      </div>
+
+      <div class="rank-item">
+        <div class="rank-num">03</div>
+        <div class="rank-info">
+          <h3>Sants</h3>
+          <p>Melhor custo-benefício da lista. Estación de Sants destrava AVE para viajar pela Europa em fins de semana. Autêntico, pouco turístico, conectividade nacional superior.</p>
+        </div>
+        <div class="rank-meta">
+          <span class="price">€700</span>
+          27–32 min
+        </div>
+      </div>
+
+      <div class="rank-item">
+        <div class="rank-num">04</div>
+        <div class="rank-info">
+          <h3>Gràcia</h3>
+          <p>A escolha óbvia se a prioridade for experiência cultural. Vibe imbatível, comunidade ESADE alta, cena de bairro densa. Trade-off: prédios antigos, ruído noturno em certas ruas.</p>
+        </div>
+        <div class="rank-meta">
+          <span class="price">€825</span>
+          25–35 min
+        </div>
+      </div>
+
+      <div class="rank-item">
+        <div class="rank-num">05</div>
+        <div class="rank-info">
+          <h3>Poble-sec</h3>
+          <p>Vida cultural mais intensa do mapa (Carrer de Blai). Demografia jovem internacional crescente. Penalizado pelo commute médio-alto e necessidade de troca metrô→FGC.</p>
+        </div>
+        <div class="rank-meta">
+          <span class="price">€750</span>
+          35–45 min
+        </div>
+      </div>
+
+      <div class="rank-item">
+        <div class="rank-num">06</div>
+        <div class="rank-info">
+          <h3>Poblenou</h3>
+          <p>Ecossistema 22@ (Meta, Amazon, Glovo) + praia a 10 min a pé. Tese ótima para quem prioriza ambiente de inovação. Custo: commute de 45–55 min e isolamento da turma ESADE.</p>
+        </div>
+        <div class="rank-meta">
+          <span class="price">€750</span>
+          45–55 min
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LEAGUES -->
+<section id="ligas">
+  <div class="container">
+    <div class="section-num">02 — TRÊS LIGAS</div>
+    <h2 class="section-title">A decisão real é qual liga jogar.</h2>
+    <p class="section-lede">Em vez de comparar 6 bairros individualmente, decidir o eixo de prioridade reduz a decisão a 2-3 opções por liga.</p>
+
+    <div class="leagues">
+      <div class="league league-A-card">
+        <span class="league-letter">A</span>
+        <div class="league-meta">Liga A · Eficiência</div>
+        <h3>Operacional</h3>
+        <p class="league-tagline">Commute curto, base pragmática, foco em produtividade.</p>
+        <div class="league-bairros">
+          <div class="bairro-item">
+            <span class="nome">Eixample Esquerra</span>
+            <span class="stats">€875 · 25–30min</span>
+          </div>
+          <div class="bairro-item">
+            <span class="nome">Les Corts</span>
+            <span class="stats">€800 · 15–25min</span>
+          </div>
+          <div class="bairro-item">
+            <span class="nome">Sants</span>
+            <span class="stats">€700 · 27–32min</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="league league-B-card">
+        <span class="league-letter">B</span>
+        <div class="league-meta">Liga B · Cultural</div>
+        <h3>Experiência</h3>
+        <p class="league-tagline">Vibe forte, comunidade jovem, commute médio aceito.</p>
+        <div class="league-bairros">
+          <div class="bairro-item">
+            <span class="nome">Gràcia</span>
+            <span class="stats">€825 · 25–35min</span>
+          </div>
+          <div class="bairro-item">
+            <span class="nome">Poble-sec</span>
+            <span class="stats">€750 · 35–45min</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="league league-C-card">
+        <span class="league-letter">C</span>
+        <div class="league-meta">Liga C · Nicho</div>
+        <h3>Especializada</h3>
+        <p class="league-tagline">Trade-off específico em troca de algo único.</p>
+        <div class="league-bairros">
+          <div class="bairro-item">
+            <span class="nome">Poblenou</span>
+            <span class="stats">€750 · 45–55min</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TABLE -->
+<section id="tabela">
+  <div class="container">
+    <div class="section-num">03 — MATRIZ COMPLETA</div>
+    <h2 class="section-title">Tudo de uma vez.</h2>
+    <p class="section-lede">Clique nos cabeçalhos para ordenar. Filtre por liga ou status. Descartados aparecem em opacidade reduzida ao final.</p>
+
+    <div class="filters">
+      <span class="filter-label">Filtrar:</span>
+      <button class="filter-btn active" data-filter="all">Todos (10)</button>
+      <button class="filter-btn" data-filter="viable">Viáveis (6)</button>
+      <button class="filter-btn" data-filter="A">Liga A</button>
+      <button class="filter-btn" data-filter="B">Liga B</button>
+      <button class="filter-btn" data-filter="C">Liga C</button>
+      <button class="filter-btn" data-filter="discarded">Descartados</button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="comp-table">
+        <thead>
+          <tr>
+            <th data-sort="rank" data-type="num" class="sort-active">#</th>
+            <th data-sort="bairro" data-type="str">Bairro</th>
+            <th data-sort="commute" data-type="num">Commute (min)</th>
+            <th data-sort="preco" data-type="num">Preço (€)</th>
+            <th data-sort="esade" data-type="num">Comunidade ESADE</th>
+            <th data-sort="noite" data-type="num">Vida noturna</th>
+            <th data-sort="vibe" data-type="num">Vibe jovem</th>
+            <th data-sort="autenticidade" data-type="num">Autenticidade</th>
+            <th data-sort="cb" data-type="num">Custo-benefício</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FGC INSIGHT -->
+<section class="insight" id="fgc">
+  <div class="container">
+    <div class="section-num">04 — INSIGHT</div>
+    <h2 class="section-title">A regra do FGC.</h2>
+    <p class="section-lede">Depois de mapear 10 bairros, um padrão emerge muito mais determinante que distância em quilômetros ou faixa de preço.</p>
+
+    <blockquote class="insight-quote">
+      Para ESADE Sant Cugat, o que importa muito mais que distância em km é acesso direto ao FGC linha S5/S55.
+    </blockquote>
+
+    <div class="fgc-tiers">
+      <div class="tier tier-1">
+        <span class="tier-icon">✓</span>
+        <span class="label">Tier 1 · Vencem</span>
+        <h4>FGC próximo</h4>
+        <p>Les Corts, Eixample Esquerra/Provença, Sants, Gràcia (limite com Eixample). Ganham por margem larga, 15–35 min.</p>
+      </div>
+
+      <div class="tier tier-2">
+        <span class="tier-icon">~</span>
+        <span class="label">Tier 2 · Penalizam</span>
+        <h4>Metrô + 1 troca</h4>
+        <p>Poble-sec, Poblenou, Ciutat Vella. Adicionam 15–20 min obrigatórios pela troca em Catalunya ou Provença.</p>
+      </div>
+
+      <div class="tier tier-3">
+        <span class="tier-icon">×</span>
+        <span class="label">Tier 3 · Inviáveis</span>
+        <h4>Metrô + 2 trocas</h4>
+        <p>Horta, Sant Andreu, L'Hospitalet. Commute de 55–70 min torna o bairro insustentável para programa intensivo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DISCARDED -->
+<section class="discarded-section" id="descartados">
+  <div class="container">
+    <div class="section-num">05 — DESCARTADOS</div>
+    <h2 class="section-title">Os quatro que ficaram fora.</h2>
+    <p class="section-lede">Não por preconceito, mas por matemática. Cada um foi analisado individualmente e perdeu pelo mesmo motivo central: o ganho marginal não compensa o trade-off.</p>
+
+    <div class="discarded-grid">
+      <div class="discarded-card">
+        <h4>Ciutat Vella</h4>
+        <p class="reason">Turístico, barulhento, furtos, prédios antigos sem janelas externas. A "centralidade" não compensa: o centro útil para mim é a estação Provença, não a Rambla.</p>
+      </div>
+
+      <div class="discarded-card">
+        <h4>L'Hospitalet de Llobregat</h4>
+        <p class="reason">Município separado, heterogêneo. Economia de €200–300/mês não compensa 45–65 min de commute e isolamento da comunidade ESADE.</p>
+      </div>
+
+      <div class="discarded-card">
+        <h4>Horta</h4>
+        <p class="reason">Autêntico mas isolado. Sem FGC, topografia íngreme, zero presença ESADE. Bom para famílias catalãs, ruim para mestrado intensivo de 13 meses.</p>
+      </div>
+
+      <div class="discarded-card">
+        <h4>Sant Andreu</h4>
+        <p class="reason">Pior commute (60–70 min), sem compensação real. Promessa AVE La Sagrera é horizonte de 2030+, irrelevante para o programa.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEXT STEPS -->
+<section class="next-steps" id="proximos">
+  <div class="container">
+    <div class="section-num">06 — PRÓXIMOS PASSOS</div>
+    <h2 class="section-title">O que fazer com isso.</h2>
+
+    <ul class="checklist">
+      <li><span class="check"></span><span>Decidir conscientemente em qual liga jogar (A, B ou C) antes de avaliar opções específicas</span></li>
+      <li><span class="check"></span><span>Filtrar o tracker principal pelos 6 bairros viáveis e descartar listings em zonas eliminadas</span></li>
+      <li><span class="check"></span><span>Visitar virtualmente os top 3 bairros via Google Street View para sense check</span></li>
+      <li><span class="check"></span><span>Mapear 3–5 opções concretas em Idealista, Spotahome e Badi por bairro priorizado</span></li>
+      <li><span class="check"></span><span>Revisitar essa análise em meados de julho/2026, antes de começar a fechar contratos</span></li>
+    </ul>
+
+    <div class="resources">
+      <a href="/">← Voltar ao tracker</a>
+      <a href="https://www.notion.so/371fad9d2cff81b59054f51a3df81081" target="_blank">→ Versão Notion</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Análise estratégica · Caetano da Rosa Cunha · ESADE 2026/27
+</footer>
+
+<script>
+const data = [
+  { rank: 1, bairro: 'Eixample Esquerra', league: 'A', commute: 27.5, commuteStr: '25–30', preco: 875, precoStr: '€875', esade: 5, noite: 4, vibe: 3, autenticidade: 3, cb: 3, status: 'viable' },
+  { rank: 2, bairro: 'Les Corts', league: 'A', commute: 20, commuteStr: '15–25', preco: 800, precoStr: '€800', esade: 3, noite: 1, vibe: 1, autenticidade: 3, cb: 3, status: 'viable' },
+  { rank: 3, bairro: 'Sants', league: 'A', commute: 29.5, commuteStr: '27–32', preco: 700, precoStr: '€700', esade: 2, noite: 3, vibe: 3, autenticidade: 5, cb: 5, status: 'viable' },
+  { rank: 4, bairro: 'Gràcia', league: 'B', commute: 30, commuteStr: '25–35', preco: 825, precoStr: '€825', esade: 4, noite: 5, vibe: 5, autenticidade: 4, cb: 3, status: 'viable' },
+  { rank: 5, bairro: 'Poble-sec', league: 'B', commute: 40, commuteStr: '35–45', preco: 750, precoStr: '€750', esade: 3, noite: 5, vibe: 5, autenticidade: 4, cb: 4, status: 'viable' },
+  { rank: 6, bairro: 'Poblenou', league: 'C', commute: 50, commuteStr: '45–55', preco: 750, precoStr: '€750', esade: 2, noite: 3, vibe: 4, autenticidade: 3, cb: 4, status: 'viable' },
+  { rank: 7, bairro: 'Ciutat Vella', league: 'X', commute: 45, commuteStr: '40–50', preco: 700, precoStr: '€700', esade: 1, noite: 5, vibe: 4, autenticidade: 3, cb: 2, status: 'discarded' },
+  { rank: 8, bairro: "L'Hospitalet", league: 'X', commute: 55, commuteStr: '45–65', preco: 550, precoStr: '€550', esade: 1, noite: 2, vibe: 3, autenticidade: 3, cb: 2, status: 'discarded' },
+  { rank: 9, bairro: 'Horta', league: 'X', commute: 60, commuteStr: '55–65', preco: 550, precoStr: '€550', esade: 1, noite: 1, vibe: 1, autenticidade: 5, cb: 2, status: 'discarded' },
+  { rank: 10, bairro: 'Sant Andreu', league: 'X', commute: 65, commuteStr: '60–70', preco: 550, precoStr: '€550', esade: 1, noite: 1, vibe: 1, autenticidade: 5, cb: 1, status: 'discarded' },
+];
+
+const ratingLabels = {
+  5: 'muito alta', 4: 'alta', 3: 'média', 2: 'baixa', 1: 'muito baixa'
+};
+
+const tbody = document.querySelector('#comp-table tbody');
+let currentSort = { key: 'rank', dir: 'asc' };
+let currentFilter = 'all';
+
+function render() {
+  let rows = [...data];
+
+  if (currentFilter === 'viable') rows = rows.filter(r => r.status === 'viable');
+  else if (currentFilter === 'discarded') rows = rows.filter(r => r.status === 'discarded');
+  else if (['A', 'B', 'C'].includes(currentFilter)) rows = rows.filter(r => r.league === currentFilter);
+
+  rows.sort((a, b) => {
+    const key = currentSort.key;
+    const v1 = a[key], v2 = b[key];
+    if (typeof v1 === 'number') return currentSort.dir === 'asc' ? v1 - v2 : v2 - v1;
+    return currentSort.dir === 'asc' ? v1.localeCompare(v2) : v2.localeCompare(v1);
+  });
+
+  tbody.innerHTML = rows.map(r => `
+    <tr class="${r.status === 'discarded' ? 'discarded' : ''}">
+      <td class="num">${String(r.rank).padStart(2, '0')}</td>
+      <td class="bairro">${r.bairro}<span class="league-tag league-${r.league}">${r.league === 'X' ? 'descartado' : 'Liga ' + r.league}</span></td>
+      <td class="num">${r.commuteStr}</td>
+      <td class="num">${r.precoStr}</td>
+      <td><span class="pill pill-${r.esade}">${ratingLabels[r.esade]}</span></td>
+      <td><span class="pill pill-${r.noite}">${ratingLabels[r.noite]}</span></td>
+      <td><span class="pill pill-${r.vibe}">${ratingLabels[r.vibe]}</span></td>
+      <td><span class="pill pill-${r.autenticidade}">${ratingLabels[r.autenticidade]}</span></td>
+      <td><span class="pill pill-${r.cb}">${ratingLabels[r.cb]}</span></td>
+    </tr>
+  `).join('');
+}
+
+document.querySelectorAll('thead th').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.sort;
+    if (!key) return;
+    if (currentSort.key === key) {
+      currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      currentSort.key = key;
+      currentSort.dir = 'asc';
+    }
+    document.querySelectorAll('thead th').forEach(t => t.classList.remove('sort-active', 'sort-asc'));
+    th.classList.add('sort-active');
+    if (currentSort.dir === 'asc') th.classList.add('sort-asc');
+    render();
+  });
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    render();
+  });
+});
+
+render();
+
+// Stagger ranking animation on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.rank-item').forEach((item, i) => {
+  item.style.opacity = '0';
+  item.style.transform = 'translateY(20px)';
+  item.style.transition = `opacity 0.6s ease ${i * 0.08}s, transform 0.6s ease ${i * 0.08}s, padding 0.3s, background 0.3s`;
+  observer.observe(item);
+});
+</script>
+
+</body>
+</html>
