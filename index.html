@@ -47,6 +47,33 @@ textarea{resize:vertical;min-height:60px}
 .btn-icon{padding:5px 8px;font-size:16px;line-height:1}
 
 
+
+/* RANKING TABLE */
+.rk-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:13px}
+.rk-table thead{background:var(--gray-bg)}
+.rk-table th{text-align:left;padding:10px 12px;font-weight:600;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border)}
+.rk-table td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.rk-table tr:last-child td{border-bottom:none}
+.rk-table tr:hover{background:var(--bg)}
+.rk-table tr.rk-quente{background:#fff7f7}
+.rk-table tr.rk-quente:hover{background:#fee4e4}
+.rk-table tr.rk-descartar{opacity:.5}
+.rk-score-cell{font-size:14px;color:#f5b800;white-space:nowrap;letter-spacing:1px}
+.rk-score-empty{color:#d4d0c4}
+.rk-rank{font-weight:700;color:var(--muted);width:30px;text-align:center}
+.rk-rank-1{color:#f5b800;font-size:16px}
+.rk-rank-2{color:#a0a098;font-size:15px}
+.rk-rank-3{color:#cd7f32;font-size:15px}
+.rk-nome{font-weight:600;line-height:1.3;max-width:280px}
+.rk-bairro{font-size:11px;color:var(--muted);margin-top:2px}
+.rk-preco{font-weight:600;color:var(--text);white-space:nowrap}
+.rk-preco-real{font-size:11px;color:var(--green-t);font-weight:600;display:block}
+.rk-tri{font-size:18px;text-align:center;width:36px}
+.rk-link{color:var(--accent);font-size:12px;white-space:nowrap}
+.rk-notes{font-size:11px;color:var(--muted);max-width:240px;line-height:1.4}
+.rk-source{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px}
+@media(max-width:768px){.rk-table{font-size:12px}.rk-table th,.rk-table td{padding:8px 6px}.rk-notes,.rk-bairro{display:none}}
+
 /* TRIAGEM + SCORE */
 .triagem-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 4px;padding:7px 9px;background:var(--gray-bg);border-radius:8px}
 .triagem-grp{display:flex;gap:3px}
@@ -253,6 +280,7 @@ footer strong{color:var(--muted)}
 <div class="tabs">
   <button class="tab active" onclick="switchTab('platforms')">🏢 Plataformas & Residências</button>
   <button class="tab" onclick="switchTab('apartments')">🏠 Apartamentos Específicos</button>
+  <button class="tab" onclick="switchTab('ranking')">🏆 Ranking</button>
 </div>
 
 <!-- STATS -->
@@ -375,6 +403,35 @@ footer strong{color:var(--muted)}
 
   <div style="margin-top:1.25rem;text-align:right">
     <button class="btn btn-primary" onclick="openAddModal('apartment')">+ Adicionar apartamento</button>
+  </div>
+</div>
+
+<div id="tab-ranking" class="tab-content">
+  <div class="filter-panel">
+    <div class="frow" style="align-items:center">
+      <span class="flabel" style="font-size:14px;font-weight:600">🏆 Ranking dos Favoritos</span>
+      <select id="rkfilter" style="font-size:12px;padding:4px 8px">
+        <option value="quente">🔥 Só Quentes</option>
+        <option value="quente_morno">🔥 Quentes + 🤔 Mornos</option>
+        <option value="triados">Todos triados (excl. ❌)</option>
+        <option value="all">Todos os favoritos</option>
+      </select>
+      <select id="rksort" style="font-size:12px;padding:4px 8px">
+        <option value="score">Sort: Score (5→1)</option>
+        <option value="preco">Sort: Preço (menor→maior)</option>
+        <option value="triagem">Sort: Triagem</option>
+        <option value="nome">Sort: A–Z</option>
+      </select>
+      <button class="btn btn-sm" onclick="exportRankingCSV()" style="margin-left:auto">📊 Exportar CSV</button>
+    </div>
+  </div>
+  <div class="count-bar">
+    <span class="count-txt" id="rk-count"></span>
+  </div>
+  <div id="rk-table-wrap"></div>
+  <div class="empty" id="rk-empty" style="display:none">
+    <span class="empty-icon">🏆</span>
+    <p>Nenhum favorito ainda no filtro selecionado.<br>Favorite (♡) e marque triagem (🔥/🤔) nas outras abas.</p>
   </div>
 </div>
 
@@ -688,9 +745,15 @@ function pStr(h){if(h.pmin==null&&h.pmax==null)return null;if(h.pmin&&h.pmax)ret
 // ── TABS ──────────────────────────────────────────────────────────────────────
 function switchTab(tab){
   currentTab=tab;
-  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',i===(tab==='platforms'?0:1))});
+  const idx={platforms:0,apartments:1,ranking:2}[tab]??0;
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
   document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
+  // Hide stats + shortlist box on ranking tab (own UI)
+  const showSecondary=tab!=='ranking';
+  document.querySelector('.stats').style.display=showSecondary?'':'none';
+  const slBox=document.querySelector('.sl-box');
+  if(slBox)slBox.style.display=showSecondary?'':'none';
   renderAll();
 }
 
@@ -887,7 +950,79 @@ function renderApts(){
   grid.innerHTML=filtered.map(h=>buildCard(h)).join('');
 }
 
-function renderAll(){updateStats();updateSLBox();renderPlatforms();renderApts();}
+function renderAll(){updateStats();updateSLBox();renderPlatforms();renderApts();renderRanking();}
+
+function renderRanking(){
+  const wrap=document.getElementById('rk-table-wrap');
+  const empty=document.getElementById('rk-empty');
+  const countEl=document.getElementById('rk-count');
+  if(!wrap)return;
+  const filterEl=document.getElementById('rkfilter');
+  const sortEl=document.getElementById('rksort');
+  const filterVal=filterEl?filterEl.value:'quente';
+  const sortVal=sortEl?sortEl.value:'score';
+  let items=[...platforms,...apartments].filter(h=>shortlist.includes(h.id)).map(h=>({h,ex:getEx(h.id)}));
+  // Filter
+  items=items.filter(({ex})=>{
+    if(filterVal==='quente')return ex.triagem==='quente';
+    if(filterVal==='quente_morno')return ex.triagem==='quente'||ex.triagem==='morno';
+    if(filterVal==='triados')return ex.triagem&&ex.triagem!=='descartar';
+    return true;
+  });
+  // Sort
+  const triOrd={quente:0,morno:1,null:2,descartar:3};
+  items.sort((a,b)=>{
+    if(sortVal==='score')return (b.ex.score||0)-(a.ex.score||0)||(a.h.pmin||9999)-(b.h.pmin||9999);
+    if(sortVal==='preco')return (a.ex.precoReal||a.h.pmin||9999)-(b.ex.precoReal||b.h.pmin||9999);
+    if(sortVal==='triagem')return (triOrd[a.ex.triagem]??2)-(triOrd[b.ex.triagem]??2)||(b.ex.score||0)-(a.ex.score||0);
+    return a.h.nome.localeCompare(b.h.nome);
+  });
+  countEl.textContent=items.length+' favorito'+(items.length!==1?'s':'')+' no ranking';
+  if(!items.length){wrap.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const triIcon={quente:'🔥',morno:'🤔',descartar:'❌'};
+  const rows=items.map(({h,ex},i)=>{
+    const stars='★'.repeat(ex.score||0)+'<span class="rk-score-empty">'+'★'.repeat(5-(ex.score||0))+'</span>';
+    const preco=ex.precoReal?'€'+ex.precoReal:(h.pmin?pStr(h):'<span style="color:var(--faint)">—</span>');
+    const precoExtra=ex.precoReal&&h.pmin?'<span class="rk-preco-real">est. '+pStr(h)+'</span>':'';
+    const linkUrl=ex.urlReal||h.site;
+    const linkBtn=linkUrl?`<a href="${linkUrl}" target="_blank" class="rk-link">🔗 abrir</a>`:'<span style="color:var(--faint)">—</span>';
+    const notesText=(ex.userNotes||h.notas||'').slice(0,120);
+    const rankCls=i===0?'rk-rank-1':i===1?'rk-rank-2':i===2?'rk-rank-3':'';
+    const rowCls=ex.triagem==='quente'?'rk-quente':ex.triagem==='descartar'?'rk-descartar':'';
+    return `<tr class="${rowCls}">
+      <td class="rk-rank ${rankCls}">${i+1}</td>
+      <td class="rk-tri">${triIcon[ex.triagem]||''}</td>
+      <td class="rk-score-cell">${stars}</td>
+      <td><div class="rk-nome">${h.nome}</div><div class="rk-bairro">${h.bairro?'📍 '+h.bairro:''}${h.source?' · <span class="rk-source">'+h.source+'</span>':''}</div></td>
+      <td class="rk-preco">${preco}${precoExtra}</td>
+      <td class="rk-notes">${notesText}${notesText.length>=120?'…':''}</td>
+      <td>${linkBtn}</td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML=`<table class="rk-table">
+    <thead><tr><th>#</th><th></th><th>Score</th><th>Nome / Bairro</th><th>Preço</th><th>Notas</th><th>Link</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function exportRankingCSV(){
+  const items=[...platforms,...apartments].filter(h=>shortlist.includes(h.id)).map(h=>({h,ex:getEx(h.id)}));
+  const filterVal=document.getElementById('rkfilter').value;
+  const filtered=items.filter(({ex})=>{
+    if(filterVal==='quente')return ex.triagem==='quente';
+    if(filterVal==='quente_morno')return ex.triagem==='quente'||ex.triagem==='morno';
+    if(filterVal==='triados')return ex.triagem&&ex.triagem!=='descartar';
+    return true;
+  }).sort((a,b)=>(b.ex.score||0)-(a.ex.score||0));
+  const esc=v=>'"'+String(v||'').replace(/"/g,'""')+'"';
+  const lines=['Posição,Triagem,Score,Nome,Bairro,Fonte,Preço (€),Preço cotado (€),Disponível,Status,Link,Notas'];
+  filtered.forEach(({h,ex},i)=>{
+    lines.push([i+1,ex.triagem||'',ex.score||0,esc(h.nome),esc(h.bairro),esc(h.source||''),h.pmin?(h.pmin===h.pmax?h.pmin:h.pmin+'-'+h.pmax):'',ex.precoReal||'',ex.availReal||h.avail||'',ex.status||'',esc(ex.urlReal||h.site||''),esc(ex.userNotes||h.notas||'')].join(','));
+  });
+  const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ranking-moradia-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
 
 // ── ACTIONS ───────────────────────────────────────────────────────────────────
 function toggleSL(id){
@@ -1180,7 +1315,7 @@ function importAll(e){
   document.getElementById(id).addEventListener('input',renderPlatforms);
   document.getElementById(id).addEventListener('change',renderPlatforms);
 });
-['aq','aquarto','astatus','abairro','afav','asort','aprice','atri'].forEach(id=>{
+['aq','aquarto','astatus','abairro','afav','asort','aprice','atri','rkfilter','rksort'].forEach(id=>{
   document.getElementById(id).addEventListener('input',renderApts);
   document.getElementById(id).addEventListener('change',renderApts);
 });
