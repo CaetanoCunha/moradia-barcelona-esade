@@ -46,6 +46,23 @@ textarea{resize:vertical;min-height:60px}
 .btn-sm{padding:4px 9px;font-size:12px}
 .btn-icon{padding:5px 8px;font-size:16px;line-height:1}
 
+
+/* TRIAGEM + SCORE */
+.triagem-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 4px;padding:7px 9px;background:var(--gray-bg);border-radius:8px}
+.triagem-grp{display:flex;gap:3px}
+.tri-btn{padding:3px 8px;font-size:12px;border:1px solid var(--border-s);border-radius:6px;background:var(--card);cursor:pointer;transition:all .15s;line-height:1.4}
+.tri-btn:hover{background:var(--gray-bg)}
+.tri-btn.on-quente{background:#fee4e4;border-color:var(--fav);color:var(--fav);font-weight:600}
+.tri-btn.on-morno{background:var(--amber-bg);border-color:var(--amber-t);color:var(--amber-t);font-weight:600}
+.tri-btn.on-descartar{background:#e8e8e0;border-color:var(--faint);color:var(--muted);text-decoration:line-through}
+.card.tri-descartar{opacity:.55}
+.card.tri-quente{box-shadow:0 0 0 2px var(--fav),0 2px 8px rgba(217,64,64,.15)}
+.score-grp{display:flex;gap:1px;margin-left:auto}
+.star-btn{background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;color:#d4d0c4;line-height:1;transition:transform .1s}
+.star-btn:hover{transform:scale(1.15)}
+.star-btn.on{color:#f5b800}
+.score-label{font-size:11px;color:var(--muted);margin-right:4px}
+
 /* LAYOUT */
 .wrap{max-width:1180px;margin:0 auto;padding:1.25rem 1.5rem}
 
@@ -245,6 +262,7 @@ footer strong{color:var(--muted)}
   <div class="stat s3"><div class="n" id="s-ct">0</div><div class="l">já contatados</div></div>
   <div class="stat s4"><div class="n" id="s-ok">0</div><div class="l">disponíveis</div></div>
   <div class="stat s5"><div class="n" id="s-sl">0</div><div class="l">shortlist</div></div>
+      <div class="stat s6"><div class="n" id="s-quente">0</div><div class="l">🔥 quentes</div></div>
 </div>
 
 <!-- TAB: PLATFORMS -->
@@ -340,12 +358,13 @@ footer strong{color:var(--muted)}
       <select id="abairro"><option value="">Todos os bairros</option><option value="Eixample">Eixample</option><option value="Gràcia">Gràcia</option><option value="Poblenou">Poblenou</option><option value="Sarrià">Sarrià</option><option value="Poble Sec">Poble Sec</option><option value="Sants">Sants</option><option value="Collblanc">Collblanc</option><option value="L'Hospitalet">L'Hospitalet</option><option value="Sant Cugat">Sant Cugat</option></select>
       <div class="price-w"><span class="flabel" style="min-width:auto">Até</span><input type="range" id="aprice" min="0" max="2000" step="50" value="2000" oninput="document.getElementById('apval').textContent=this.value>=2000?'qualquer':'€'+this.value"><span class="pval" id="apval">qualquer</span></div>
       <label class="chk"><input type="checkbox" id="afav"> Só shortlist</label>
+      <select id="atri" style="font-size:12px;padding:4px 8px"><option value="">Toda triagem</option><option value="quente">🔥 Só quentes</option><option value="morno">🤔 Só mornos</option><option value="triados">Triados</option><option value="naotriados">Não triados</option><option value="nao_descartado">Excluir descartados</option></select>
     </div>
   </div>
 
   <div class="count-bar">
     <span class="count-txt" id="a-count"></span>
-    <div class="sort-w">Ordenar: <select id="asort" style="font-size:12px;padding:4px 8px"><option value="preco">Preço</option><option value="nome">A–Z</option><option value="status">Status</option></select></div>
+    <div class="sort-w">Ordenar: <select id="asort" style="font-size:12px;padding:4px 8px"><option value="triagem">Triagem</option><option value="score">Score</option><option value="preco">Preço</option><option value="nome">A–Z</option><option value="status">Status</option></select></div>
   </div>
   <div class="grid" id="a-grid"></div>
   <div class="empty" id="a-empty">
@@ -661,8 +680,8 @@ function saveApts(){save('hapts',apartments)}
 function saveExtras(){save('hextras3',extras)}
 function saveSL(){save('hsl3',shortlist)}
 
-function getEx(id){return extras[id]||{status:'nao_contatado',userNotes:'',precoReal:null,availReal:null}}
-function setEx(id,k,v){if(!extras[id])extras[id]={status:'nao_contatado',userNotes:'',precoReal:null,availReal:null};extras[id][k]=v;saveExtras();}
+function getEx(id){const e=extras[id]||{};return{status:e.status||'nao_contatado',userNotes:e.userNotes||'',precoReal:e.precoReal||null,availReal:e.availReal||null,urlReal:e.urlReal||null,triagem:e.triagem||null,score:e.score||0}}
+function setEx(id,k,v){if(!extras[id])extras[id]={status:'nao_contatado',userNotes:'',precoReal:null,availReal:null,triagem:null,score:0};extras[id][k]=v;saveExtras();}
 
 function pStr(h){if(h.pmin==null&&h.pmax==null)return null;if(h.pmin&&h.pmax)return`€${h.pmin}–${h.pmax}`;if(h.pmin)return`a partir de €${h.pmin}`;return`até €${h.pmax}`;}
 
@@ -708,6 +727,8 @@ function sortData(arr, sortKey){
     if(sortKey==='preco')return(a.pmin||9999)-(b.pmin||9999);
     if(sortKey==='status')return ST_ORD[getEx(a.id).status]-ST_ORD[getEx(b.id).status];
     if(sortKey==='tipo')return a.tipo.localeCompare(b.tipo);
+    if(sortKey==='score')return (getEx(b.id).score||0)-(getEx(a.id).score||0);
+    if(sortKey==='triagem'){const ord={quente:0,morno:1,null:2,descartar:3};return (ord[getEx(a.id).triagem]??2)-(ord[getEx(b.id).triagem]??2);}
     return a.nome.localeCompare(b.nome);
   });
 }
@@ -719,6 +740,7 @@ function filterApts(){
   const bairro=document.getElementById('abairro').value;
   const pmax=parseInt(document.getElementById('aprice').value);
   const fav=document.getElementById('afav').checked;
+  const tri=document.getElementById('atri')?document.getElementById('atri').value:'';
   return apartments.filter(h=>{
     const ex=getEx(h.id);
     if(quarto&&h.quarto!==quarto)return false;
@@ -726,6 +748,11 @@ function filterApts(){
     if(bairro&&h.bairro!==bairro)return false;
     if(pmax<2000&&h.pmin!=null&&h.pmin>pmax)return false;
     if(fav&&!shortlist.includes(h.id))return false;
+    if(tri==='quente'&&ex.triagem!=='quente')return false;
+    if(tri==='morno'&&ex.triagem!=='morno')return false;
+    if(tri==='triados'&&!ex.triagem)return false;
+    if(tri==='naotriados'&&ex.triagem)return false;
+    if(tri==='nao_descartado'&&ex.triagem==='descartar')return false;
     if(q&&!h.nome.toLowerCase().includes(q)&&!(h.notas||'').toLowerCase().includes(q)&&!(h.bairro||'').toLowerCase().includes(q))return false;
     return true;
   });
@@ -768,7 +795,7 @@ function buildCard(h){
     }
   }
 
-  return`<div class="card${fav?' fav':''}${ex.status==='indisponivel'?' st-no':''}" id="card-${h.id}">
+  return`<div class="card${fav?' fav':''}${ex.status==='indisponivel'?' st-no':''}${ex.triagem?' tri-'+ex.triagem:''}" id="card-${h.id}">
   <div class="card-top">
     <div style="flex:1;min-width:0">
       <div class="badges">
@@ -792,6 +819,15 @@ function buildCard(h){
   ${h.disc?`<div class="disc-box">⭐ <span>${h.discInfo}</span></div>`:''}
   <p class="notes-txt">${h.notas||''}</p>
   ${ex.userNotes?`<div class="user-notes">📝 ${ex.userNotes}</div>`:''}
+  <div class="triagem-row">
+    <div class="triagem-grp">
+      <button class="tri-btn${ex.triagem==='quente'?' on-quente':''}" onclick="setTriagem(${h.id},'quente')" title="Quente — vale investigar">🔥</button>
+      <button class="tri-btn${ex.triagem==='morno'?' on-morno':''}" onclick="setTriagem(${h.id},'morno')" title="Morno — talvez">🤔</button>
+      <button class="tri-btn${ex.triagem==='descartar'?' on-descartar':''}" onclick="setTriagem(${h.id},'descartar')" title="Descartar">❌</button>
+    </div>
+    <span class="score-label">Score</span>
+    <div class="score-grp">${[1,2,3,4,5].map(n=>`<button class="star-btn${ex.score>=n?' on':''}" onclick="setScore(${h.id},${n})" title="${n}/5">★</button>`).join('')}</div>
+  </div>
   <div class="contact-row">${contacts.join('')}<button class="btn btn-sm" style="margin-left:auto" onclick="toggleEdit(${h.id})">✏</button>${isApt?`<button class="btn btn-sm" onclick="deleteCard(${h.id})" title="Remover" style="color:var(--red-t)">🗑</button>`:''}</div>
   <div class="edit-area" id="edit-${h.id}" style="display:none">
     <textarea id="note-${h.id}" placeholder="Suas anotações (preço cotado, impressão, próximo passo...)">${ex.userNotes||''}</textarea>
@@ -816,6 +852,8 @@ function updateStats(){
   document.getElementById('s-ct').textContent = data.filter(h => (extras[h.id]||{}).status === 'contatado').length;
   document.getElementById('s-ok').textContent = data.filter(h => (extras[h.id]||{}).status === 'disponivel').length;
   document.getElementById('s-sl').textContent = data.filter(h => shortlist.includes(h.id)).length;
+  const quenteEl=document.getElementById('s-quente');
+  if(quenteEl) quenteEl.textContent = data.filter(h => getEx(h.id).triagem==='quente').length;
   const slCount = data.filter(h => shortlist.includes(h.id)).length;
   document.getElementById('sub-txt').textContent = isApts
     ? `${apartments.length} apartamentos · ${slCount} na shortlist`
@@ -857,6 +895,8 @@ function toggleSL(id){
   saveSL();renderAll();
 }
 function removeSL(id){shortlist=shortlist.filter(x=>x!==id);saveSL();renderAll();}
+function setTriagem(id,val){const cur=getEx(id).triagem;setEx(id,'triagem',cur===val?null:val);renderAll();}
+function setScore(id,val){const cur=getEx(id).score;setEx(id,'score',cur===val?0:val);renderAll();}
 function cycleStatus(id){setEx(id,'status',ST_CY[getEx(id).status]);renderAll();}
 function toggleEdit(id){const el=document.getElementById('edit-'+id);el.style.display=el.style.display==='none'?'flex':'none';}
 function saveNote(id){
@@ -1140,7 +1180,7 @@ function importAll(e){
   document.getElementById(id).addEventListener('input',renderPlatforms);
   document.getElementById(id).addEventListener('change',renderPlatforms);
 });
-['aq','aquarto','astatus','abairro','afav','asort','aprice'].forEach(id=>{
+['aq','aquarto','astatus','abairro','afav','asort','aprice','atri'].forEach(id=>{
   document.getElementById(id).addEventListener('input',renderApts);
   document.getElementById(id).addEventListener('change',renderApts);
 });
