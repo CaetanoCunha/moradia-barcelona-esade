@@ -311,6 +311,7 @@ footer strong{color:var(--muted)}
       <label class="chk"><input type="checkbox" id="pdisc"> Só desconto ESADE</label>
       <label class="chk"><input type="checkbox" id="phb"> Só handbook</label>
       <label class="chk"><input type="checkbox" id="pfav"> Só shortlist</label>
+      <select id="ptri" style="font-size:12px;padding:4px 8px"><option value="">Toda triagem</option><option value="quente">🔥 Só quentes</option><option value="morno">🤔 Só mornos</option><option value="triados">Triados</option><option value="naotriados">Não triados</option><option value="nao_descartado">Excluir descartados</option></select>
     </div>
   </div>
 
@@ -324,7 +325,7 @@ footer strong{color:var(--muted)}
 
   <div class="count-bar">
     <span class="count-txt" id="p-count"></span>
-    <div class="sort-w">Ordenar: <select id="psort" style="font-size:12px;padding:4px 8px"><option value="nome">A–Z</option><option value="preco">Preço</option><option value="status">Status</option><option value="tipo">Tipo</option></select></div>
+    <div class="sort-w">Ordenar: <select id="psort" style="font-size:12px;padding:4px 8px"><option value="triagem">Triagem</option><option value="score">Score</option><option value="nome">A–Z</option><option value="preco">Preço</option><option value="status">Status</option><option value="tipo">Tipo</option></select></div>
   </div>
   <div class="grid" id="p-grid"></div>
   <div class="empty" id="p-empty" style="display:none"><span class="empty-icon">🔍</span><p>Nenhum resultado com esses filtros.</p></div>
@@ -769,8 +770,14 @@ function filterPlatforms(){
   const disc=document.getElementById('pdisc').checked;
   const hb=document.getElementById('phb').checked;
   const fav=document.getElementById('pfav').checked;
+  const tri=document.getElementById('ptri')?document.getElementById('ptri').value:'';
   return platforms.filter(h=>{
     const ex=getEx(h.id);
+    if(tri==='quente'&&ex.triagem!=='quente')return false;
+    if(tri==='morno'&&ex.triagem!=='morno')return false;
+    if(tri==='triados'&&!ex.triagem)return false;
+    if(tri==='naotriados'&&ex.triagem)return false;
+    if(tri==='nao_descartado'&&ex.triagem==='descartar')return false;
     if(tipo&&h.tipo!==tipo)return false;
     if(quarto&&h.quarto!==quarto)return false;
     if(status&&ex.status!==status)return false;
@@ -1311,13 +1318,16 @@ function importAll(e){
 }
 
 // ── FILTER LISTENERS ──────────────────────────────────────────────────────────
-['pq','ptipo','pquarto','pstatus','plocal','pdisc','phb','pfav','psort','pprice','pavail'].forEach(id=>{
+['pq','ptipo','pquarto','pstatus','plocal','pdisc','phb','pfav','psort','pprice','pavail','ptri'].forEach(id=>{
   document.getElementById(id).addEventListener('input',renderPlatforms);
   document.getElementById(id).addEventListener('change',renderPlatforms);
 });
-['aq','aquarto','astatus','abairro','afav','asort','aprice','atri','rkfilter','rksort'].forEach(id=>{
+['aq','aquarto','astatus','abairro','afav','asort','aprice','atri'].forEach(id=>{
   document.getElementById(id).addEventListener('input',renderApts);
   document.getElementById(id).addEventListener('change',renderApts);
+});
+['rkfilter','rksort'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',renderRanking);
 });
 
 renderAll();
