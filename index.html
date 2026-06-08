@@ -422,6 +422,7 @@ footer strong{color:var(--muted)}
         <option value="score">Sort: Score (5→1)</option>
         <option value="preco">Sort: Preço (menor→maior)</option>
         <option value="triagem">Sort: Triagem</option>
+        <option value="status">Sort: Status</option>
         <option value="nome">Sort: A–Z</option>
       </select>
       <button class="btn btn-sm" onclick="exportRankingCSV()" style="margin-left:auto">📊 Exportar CSV</button>
@@ -995,6 +996,7 @@ function renderRanking(){
     if(sortVal==='score')return (b.ex.score||0)-(a.ex.score||0)||(a.h.pmin||9999)-(b.h.pmin||9999);
     if(sortVal==='preco')return (a.ex.precoReal||a.h.pmin||9999)-(b.ex.precoReal||b.h.pmin||9999);
     if(sortVal==='triagem')return (triOrd[a.ex.triagem]??2)-(triOrd[b.ex.triagem]??2)||(b.ex.score||0)-(a.ex.score||0);
+    if(sortVal==='status')return (ST_ORD[a.ex.status]??9)-(ST_ORD[b.ex.status]??9)||(b.ex.score||0)-(a.ex.score||0);
     return a.h.nome.localeCompare(b.h.nome);
   });
   countEl.textContent=items.length+' favorito'+(items.length!==1?'s':'')+' no ranking';
@@ -1010,18 +1012,20 @@ function renderRanking(){
     const notesText=(ex.userNotes||h.notas||'').slice(0,120);
     const rankCls=i===0?'rk-rank-1':i===1?'rk-rank-2':i===2?'rk-rank-3':'';
     const rowCls=ex.triagem==='quente'?'rk-quente':ex.triagem==='descartar'?'rk-descartar':'';
+    const statusBtn=`<button class="status-btn ${ST_CL[ex.status]}" onclick="event.stopPropagation();cycleStatus(${h.id})" title="Clique para alterar">${ST_LB[ex.status]}</button>`;
     return `<tr class="${rowCls}">
       <td class="rk-rank ${rankCls}">${i+1}</td>
       <td class="rk-tri">${triIcon[ex.triagem]||''}</td>
       <td class="rk-score-cell">${stars}</td>
       <td><div class="rk-nome">${h.nome}</div><div class="rk-bairro">${h.bairro?'📍 '+h.bairro:''}${h.source?' · <span class="rk-source">'+h.source+'</span>':''}</div></td>
       <td class="rk-preco">${preco}${precoExtra}</td>
+      <td class="rk-status">${statusBtn}</td>
       <td class="rk-notes">${notesText}${notesText.length>=120?'…':''}</td>
       <td>${linkBtn}</td>
     </tr>`;
   }).join('');
   wrap.innerHTML=`<table class="rk-table">
-    <thead><tr><th>#</th><th></th><th>Score</th><th>Nome / Bairro</th><th>Preço</th><th>Notas</th><th>Link</th></tr></thead>
+    <thead><tr><th>#</th><th></th><th>Score</th><th>Nome / Bairro</th><th>Preço</th><th>Status</th><th>Notas</th><th>Link</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 }
