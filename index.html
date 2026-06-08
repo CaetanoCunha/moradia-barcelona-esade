@@ -298,7 +298,7 @@ footer strong{color:var(--muted)}
   <div class="filter-panel">
     <div class="frow">
       <span class="flabel">Buscar</span>
-      <input type="text" id="pq" placeholder="nome, bairro, palavra..." style="width:200px">
+      <input type="text" id="pq" placeholder="nome, bairro, notas, link..." style="width:220px">
       <select id="ptipo"><option value="">Todos os tipos</option><option value="residencia">Residência</option><option value="coliving">Coliving</option><option value="plataforma">Plataforma</option><option value="agencia">Agência</option><option value="portal">Portal</option></select>
       <select id="pquarto"><option value="">Qualquer quarto</option><option value="shared">Compartilhado</option><option value="single">Individual</option><option value="studio">Studio</option><option value="apart">Apartamento</option><option value="various">Vários</option></select>
       <select id="pstatus"><option value="">Qualquer status</option><option value="nao_contatado">Não contatado</option><option value="contatado">Contatado</option><option value="disponivel">Disponível</option><option value="indisponivel">Indisponível</option></select>
@@ -378,7 +378,7 @@ footer strong{color:var(--muted)}
   <div class="filter-panel">
     <div class="frow">
       <span class="flabel">Buscar</span>
-      <input type="text" id="aq" placeholder="rua, bairro, palavra..." style="width:200px">
+      <input type="text" id="aq" placeholder="rua, bairro, notas, link..." style="width:220px">
       <select id="aquarto"><option value="">Qualquer quarto</option><option value="shared">Compartilhado</option><option value="single">Individual</option><option value="studio">Studio</option><option value="apart">Apartamento</option></select>
       <select id="astatus"><option value="">Qualquer status</option><option value="nao_contatado">Não contatado</option><option value="contatado">Contatado</option><option value="disponivel">Disponível</option><option value="indisponivel">Indisponível</option></select>
     </div>
@@ -411,6 +411,7 @@ footer strong{color:var(--muted)}
   <div class="filter-panel">
     <div class="frow" style="align-items:center">
       <span class="flabel" style="font-size:14px;font-weight:600">🏆 Ranking dos Favoritos</span>
+      <input type="text" id="rkq" placeholder="buscar nome, bairro, notas..." style="width:220px">
       <select id="rkfilter" style="font-size:12px;padding:4px 8px">
         <option value="quente">🔥 Só Quentes</option>
         <option value="quente_morno">🔥 Quentes + 🤔 Mornos</option>
@@ -787,7 +788,10 @@ function filterPlatforms(){
     if(disc&&!h.disc)return false;
     if(hb&&!h.hb)return false;
     if(fav&&!shortlist.includes(h.id))return false;
-    if(q&&!h.nome.toLowerCase().includes(q)&&!(h.notas||'').toLowerCase().includes(q)&&!(h.bairro||'').toLowerCase().includes(q))return false;
+    if(q){
+      const hay=[h.nome,h.notas,h.bairro,h.tipo,h.source,h.end,h.email,ex.userNotes,ex.urlReal||h.site].filter(Boolean).join(' ').toLowerCase();
+      if(!hay.includes(q))return false;
+    }
     return true;
   });
 }
@@ -823,7 +827,10 @@ function filterApts(){
     if(tri==='triados'&&!ex.triagem)return false;
     if(tri==='naotriados'&&ex.triagem)return false;
     if(tri==='nao_descartado'&&ex.triagem==='descartar')return false;
-    if(q&&!h.nome.toLowerCase().includes(q)&&!(h.notas||'').toLowerCase().includes(q)&&!(h.bairro||'').toLowerCase().includes(q))return false;
+    if(q){
+      const hay=[h.nome,h.notas,h.bairro,h.source,h.end,ex.userNotes,ex.urlReal||h.site].filter(Boolean).join(' ').toLowerCase();
+      if(!hay.includes(q))return false;
+    }
     return true;
   });
 }
@@ -968,12 +975,18 @@ function renderRanking(){
   const sortEl=document.getElementById('rksort');
   const filterVal=filterEl?filterEl.value:'quente';
   const sortVal=sortEl?sortEl.value:'score';
+  const qEl=document.getElementById('rkq');
+  const q=qEl?qEl.value.toLowerCase().trim():'';
   let items=[...platforms,...apartments].filter(h=>shortlist.includes(h.id)).map(h=>({h,ex:getEx(h.id)}));
   // Filter
-  items=items.filter(({ex})=>{
-    if(filterVal==='quente')return ex.triagem==='quente';
-    if(filterVal==='quente_morno')return ex.triagem==='quente'||ex.triagem==='morno';
-    if(filterVal==='triados')return ex.triagem&&ex.triagem!=='descartar';
+  items=items.filter(({h,ex})=>{
+    if(filterVal==='quente'&&ex.triagem!=='quente')return false;
+    if(filterVal==='quente_morno'&&!(ex.triagem==='quente'||ex.triagem==='morno'))return false;
+    if(filterVal==='triados'&&!(ex.triagem&&ex.triagem!=='descartar'))return false;
+    if(q){
+      const hay=[h.nome,h.notas,h.bairro,h.source,h.end,h.tipo,ex.userNotes,ex.urlReal||h.site].filter(Boolean).join(' ').toLowerCase();
+      if(!hay.includes(q))return false;
+    }
     return true;
   });
   // Sort
@@ -1326,8 +1339,11 @@ function importAll(e){
   document.getElementById(id).addEventListener('input',renderApts);
   document.getElementById(id).addEventListener('change',renderApts);
 });
-['rkfilter','rksort'].forEach(id=>{
-  document.getElementById(id).addEventListener('change',renderRanking);
+['rkfilter','rksort','rkq'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.addEventListener('change',renderRanking);
+  el.addEventListener('input',renderRanking);
 });
 
 renderAll();
