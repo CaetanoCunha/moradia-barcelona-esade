@@ -69,6 +69,12 @@ textarea{resize:vertical;min-height:60px}
 .rk-preco{font-weight:600;color:var(--text);white-space:nowrap}
 .rk-preco-real{font-size:11px;color:var(--green-t);font-weight:600;display:block}
 .rk-tri{text-align:center;width:46px;padding:6px 4px!important}
+.rk-tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:10px;margin-right:5px;vertical-align:1px;white-space:nowrap;letter-spacing:.2px}
+.rk-tag.tg-apt{background:#e8f3e8;color:#2d6a2d;border:1px solid #c5dec5}
+.rk-tag.tg-res{background:#e8edf7;color:#2d4a8a;border:1px solid #c5d2e8}
+.rk-tag.tg-por{background:#f3ebf7;color:#6a2d8a;border:1px solid #dcc5e8}
+.rk-tag.tg-agc{background:#fdf0e0;color:#8a5a2d;border:1px solid #e8d2b5}
+.rk-tag.tg-col{background:#fef7d8;color:#7a5a14;border:1px solid #ecd99a}
 .rk-tri-grp{display:inline-flex;gap:2px;justify-content:center}
 .rk-tri-btn{padding:3px 8px;font-size:15px;border:1px solid var(--border-s);border-radius:6px;background:var(--card);cursor:pointer;line-height:1;transition:all .15s;min-width:32px}
 .rk-tri-btn:hover{background:var(--gray-bg)}
@@ -990,7 +996,7 @@ function renderRanking(){
   const sortVal=sortEl?sortEl.value:'score';
   const qEl=document.getElementById('rkq');
   const q=qEl?qEl.value.toLowerCase().trim():'';
-  let items=[...platforms,...apartments].filter(h=>shortlist.includes(h.id)).map(h=>({h,ex:getEx(h.id)}));
+  let items=[...platforms.map(h=>({h,ex:getEx(h.id),src:'plat'})),...apartments.map(h=>({h,ex:getEx(h.id),src:'apt'}))].filter(x=>shortlist.includes(x.h.id));
   // Filter
   items=items.filter(({h,ex})=>{
     if(filterVal==='quente'&&ex.triagem!=='quente')return false;
@@ -1015,7 +1021,10 @@ function renderRanking(){
   if(!items.length){wrap.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
   const triIcon={quente:'🔥',morno:'🤔',descartar:'❌'};
-  const rows=items.map(({h,ex},i)=>{
+  const rows=items.map(({h,ex,src},i)=>{
+    const tipoMap={apartamento:{lb:'🔑 Apto',cls:'tg-apt'},residencia:{lb:'🏢 Residência',cls:'tg-res'},portal:{lb:'🌐 Portal',cls:'tg-por'},plataforma:{lb:'🌐 Plataforma',cls:'tg-por'},agencia:{lb:'🏛 Agência',cls:'tg-agc'},coliving:{lb:'👥 Coliving',cls:'tg-col'}};
+    const tg=tipoMap[h.tipo]||{lb:h.tipo||'—',cls:'tg-apt'};
+    const tipoBadge=`<span class="rk-tag ${tg.cls}">${tg.lb}</span>`;
     const starsBtns=[1,2,3,4,5].map(n=>`<button class="rk-star${ex.score>=n?' on':''}" onclick="event.stopPropagation();setScore(${h.id},${n})" title="${n}/5">★</button>`).join('');
     const triMap={quente:'🔥',morno:'🤔',descartar:'❌'};
     const triCls=ex.triagem?' on-'+ex.triagem:'';
@@ -1033,7 +1042,7 @@ function renderRanking(){
       <td class="rk-rank ${rankCls}">${i+1}</td>
       <td class="rk-tri">${triBtns}</td>
       <td class="rk-score-cell">${starsBtns}</td>
-      <td><div class="rk-nome">${h.nome}</div><div class="rk-bairro">${h.bairro?'📍 '+h.bairro:''}${h.source?' · <span class="rk-source">'+h.source+'</span>':''}</div></td>
+      <td><div class="rk-nome">${tipoBadge} ${h.nome}</div><div class="rk-bairro">${h.bairro?'📍 '+h.bairro:''}${h.source?' · <span class="rk-source">'+h.source+'</span>':''}</div></td>
       <td class="rk-preco">${preco}${precoExtra}</td>
       <td class="rk-status">${statusBtn}</td>
       <td class="rk-notes">${notesText}${notesText.length>=120?'…':''}</td>
@@ -1056,9 +1065,9 @@ function exportRankingCSV(){
     return true;
   }).sort((a,b)=>(b.ex.score||0)-(a.ex.score||0));
   const esc=v=>'"'+String(v||'').replace(/"/g,'""')+'"';
-  const lines=['Posição,Triagem,Score,Nome,Bairro,Fonte,Preço (€),Preço cotado (€),Disponível,Status,Link,Notas'];
+  const lines=['Posição,Tipo,Triagem,Score,Nome,Bairro,Fonte,Preço (€),Preço cotado (€),Disponível,Status,Link,Notas'];
   filtered.forEach(({h,ex},i)=>{
-    lines.push([i+1,ex.triagem||'',ex.score||0,esc(h.nome),esc(h.bairro),esc(h.source||''),h.pmin?(h.pmin===h.pmax?h.pmin:h.pmin+'-'+h.pmax):'',ex.precoReal||'',ex.availReal||h.avail||'',ex.status||'',esc(ex.urlReal||h.site||''),esc(ex.userNotes||h.notas||'')].join(','));
+    lines.push([i+1,h.tipo||'',ex.triagem||'',ex.score||0,esc(h.nome),esc(h.bairro),esc(h.source||''),h.pmin?(h.pmin===h.pmax?h.pmin:h.pmin+'-'+h.pmax):'',ex.precoReal||'',ex.availReal||h.avail||'',ex.status||'',esc(ex.urlReal||h.site||''),esc(ex.userNotes||h.notas||'')].join(','));
   });
   const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ranking-moradia-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
