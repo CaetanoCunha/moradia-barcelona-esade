@@ -73,6 +73,10 @@ textarea{resize:vertical;min-height:60px}
 .rk-actions .rk-link{display:inline-flex;align-items:center}
 .rk-remove{background:none;border:1px solid transparent;color:var(--faint);cursor:pointer;font-size:13px;padding:2px 7px;border-radius:5px;line-height:1;transition:all .15s;height:22px;display:inline-flex;align-items:center;justify-content:center}
 .rk-remove:hover{background:#fee4e4;color:var(--fav);border-color:var(--fav)}
+.rk-preco{cursor:text;border-radius:4px;transition:background .15s}
+.rk-preco:hover{background:#fffbe6}
+.rk-price-inp{width:80px;padding:3px 6px;font-size:13px;border:2px solid var(--accent,#3b82f6);border-radius:4px;font-family:inherit;font-weight:600;background:#fff}
+.rk-price-inp:focus{outline:none}
 .rk-tri{text-align:center;width:46px;padding:6px 4px!important}
 .rk-notes{cursor:text;min-width:140px;max-width:260px;white-space:pre-wrap;word-break:break-word;border-radius:4px;transition:background .15s}
 .rk-notes:hover{background:#fffbe6}
@@ -1055,7 +1059,7 @@ function renderRanking(){
       <td class="rk-tri">${triBtns}</td>
       <td class="rk-score-cell">${starsBtns}</td>
       <td><div class="rk-nome">${tipoBadge} ${h.nome}</div><div class="rk-bairro">${h.bairro?'📍 '+h.bairro:''}${h.source?' · <span class="rk-source">'+h.source+'</span>':''}</div></td>
-      <td class="rk-preco">${preco}${precoExtra}</td>
+      <td class="rk-preco" data-id="${h.id}" onclick="rkPriceEdit(this,${h.id})" title="Clique para editar preço cotado">${preco}${precoExtra}</td>
       <td class="rk-status">${statusBtn}</td>
       <td class="rk-notes" data-id="${h.id}" contenteditable="true" onfocus="rkNoteFocus(this,${h.id})" onblur="rkNoteSave(this,${h.id})" onkeydown="rkNoteKey(event,this)" title="Clique para editar nota">${notesContent}</td>
       <td class="rk-actions"><span class="rk-actions-w">${linkBtn}${removeBtn}</span></td>
@@ -1096,6 +1100,22 @@ function cycleTriagem(id){const cur=getEx(id).triagem;const next={null:'quente',
 function rkRemove(id,nome){
   if(!confirm('Remover "'+nome+'" do ranking?\n\n(Vai desfavoritar — pode reaparecer favoritando de novo nas outras abas. Score, triagem e notas continuam salvos.)'))return;
   shortlist=shortlist.filter(x=>x!==id);saveSL();renderAll();
+}
+function rkPriceEdit(td,id){
+  if(td.querySelector('input'))return; // already editing
+  const cur=getEx(id).precoReal||'';
+  td.innerHTML=`<input type="number" class="rk-price-inp" value="${cur}" placeholder="€" min="0" step="10" onblur="rkPriceSave(this,${id})" onkeydown="rkPriceKey(event,this,${id})"/>`;
+  const inp=td.querySelector('input');inp.focus();inp.select();
+}
+function rkPriceSave(inp,id){
+  const v=inp.value.trim();
+  const newVal=v===''?null:Number(v);
+  setEx(id,'precoReal',newVal);
+  renderAll();
+}
+function rkPriceKey(e,inp,id){
+  if(e.key==='Enter'){e.preventDefault();inp.blur();}
+  if(e.key==='Escape'){inp.value=getEx(id).precoReal||'';inp.blur();}
 }
 function setScore(id,val){const cur=getEx(id).score;setEx(id,'score',cur===val?0:val);renderAll();}
 function rkNoteFocus(el,id){
