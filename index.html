@@ -68,7 +68,17 @@ textarea{resize:vertical;min-height:60px}
 .rk-bairro{font-size:11px;color:var(--muted);margin-top:2px}
 .rk-preco{font-weight:600;color:var(--text);white-space:nowrap}
 .rk-preco-real{font-size:11px;color:var(--green-t);font-weight:600;display:block}
-.rk-tri{font-size:18px;text-align:center;width:36px}
+.rk-tri{text-align:center;width:88px;padding:6px 4px!important}
+.rk-tri-grp{display:inline-flex;gap:2px;justify-content:center}
+.rk-tri-btn{padding:2px 5px;font-size:13px;border:1px solid var(--border-s);border-radius:5px;background:var(--card);cursor:pointer;line-height:1;transition:all .15s}
+.rk-tri-btn:hover{background:var(--gray-bg)}
+.rk-tri-btn.on-quente{background:#fee4e4;border-color:var(--fav)}
+.rk-tri-btn.on-morno{background:var(--amber-bg);border-color:var(--amber-t)}
+.rk-tri-btn.on-descartar{background:#e8e8e0;border-color:var(--faint)}
+.rk-score-cell{white-space:nowrap;width:96px;padding:6px 4px!important}
+.rk-score-cell .rk-star{background:none;border:none;cursor:pointer;font-size:15px;padding:0 1px;color:#d4d0c4;line-height:1;transition:transform .1s}
+.rk-score-cell .rk-star:hover{transform:scale(1.2)}
+.rk-score-cell .rk-star.on{color:#f5b800}
 .rk-link{color:var(--accent);font-size:12px;white-space:nowrap}
 .rk-notes{font-size:11px;color:var(--muted);max-width:240px;line-height:1.4}
 .rk-source{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px}
@@ -1006,7 +1016,12 @@ function renderRanking(){
   empty.style.display='none';
   const triIcon={quente:'🔥',morno:'🤔',descartar:'❌'};
   const rows=items.map(({h,ex},i)=>{
-    const stars='★'.repeat(ex.score||0)+'<span class="rk-score-empty">'+'★'.repeat(5-(ex.score||0))+'</span>';
+    const starsBtns=[1,2,3,4,5].map(n=>`<button class="rk-star${ex.score>=n?' on':''}" onclick="event.stopPropagation();setScore(${h.id},${n})" title="${n}/5">★</button>`).join('');
+    const triBtns=`<div class="rk-tri-grp">
+      <button class="rk-tri-btn${ex.triagem==='quente'?' on-quente':''}" onclick="event.stopPropagation();setTriagem(${h.id},'quente')" title="Quente">🔥</button>
+      <button class="rk-tri-btn${ex.triagem==='morno'?' on-morno':''}" onclick="event.stopPropagation();setTriagem(${h.id},'morno')" title="Morno">🤔</button>
+      <button class="rk-tri-btn${ex.triagem==='descartar'?' on-descartar':''}" onclick="event.stopPropagation();setTriagem(${h.id},'descartar')" title="Descartar">❌</button>
+    </div>`;
     const preco=ex.precoReal?'€'+ex.precoReal:(h.pmin?pStr(h):'<span style="color:var(--faint)">—</span>');
     const precoExtra=ex.precoReal&&h.pmin?'<span class="rk-preco-real">est. '+pStr(h)+'</span>':'';
     const linkUrl=ex.urlReal||h.site;
@@ -1017,8 +1032,8 @@ function renderRanking(){
     const statusBtn=`<button class="status-btn ${ST_CL[ex.status]}" onclick="event.stopPropagation();cycleStatus(${h.id})" title="Clique para alterar">${ST_LB[ex.status]}</button>`;
     return `<tr class="${rowCls}">
       <td class="rk-rank ${rankCls}">${i+1}</td>
-      <td class="rk-tri">${triIcon[ex.triagem]||''}</td>
-      <td class="rk-score-cell">${stars}</td>
+      <td class="rk-tri">${triBtns}</td>
+      <td class="rk-score-cell">${starsBtns}</td>
       <td><div class="rk-nome">${h.nome}</div><div class="rk-bairro">${h.bairro?'📍 '+h.bairro:''}${h.source?' · <span class="rk-source">'+h.source+'</span>':''}</div></td>
       <td class="rk-preco">${preco}${precoExtra}</td>
       <td class="rk-status">${statusBtn}</td>
@@ -1027,7 +1042,7 @@ function renderRanking(){
     </tr>`;
   }).join('');
   wrap.innerHTML=`<table class="rk-table">
-    <thead><tr><th>#</th><th></th><th>Score</th><th>Nome / Bairro</th><th>Preço</th><th>Status</th><th>Notas</th><th>Link</th></tr></thead>
+    <thead><tr><th>#</th><th>Triagem</th><th>Score</th><th>Nome / Bairro</th><th>Preço</th><th>Status</th><th>Notas</th><th>Link</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 }
