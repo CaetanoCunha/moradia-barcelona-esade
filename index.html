@@ -68,9 +68,9 @@ textarea{resize:vertical;min-height:60px}
 .rk-bairro{font-size:11px;color:var(--muted);margin-top:2px}
 .rk-preco{font-weight:600;color:var(--text);white-space:nowrap}
 .rk-preco-real{font-size:11px;color:var(--green-t);font-weight:600;display:block}
-.rk-tri{text-align:center;width:88px;padding:6px 4px!important}
+.rk-tri{text-align:center;width:46px;padding:6px 4px!important}
 .rk-tri-grp{display:inline-flex;gap:2px;justify-content:center}
-.rk-tri-btn{padding:2px 5px;font-size:13px;border:1px solid var(--border-s);border-radius:5px;background:var(--card);cursor:pointer;line-height:1;transition:all .15s}
+.rk-tri-btn{padding:3px 8px;font-size:15px;border:1px solid var(--border-s);border-radius:6px;background:var(--card);cursor:pointer;line-height:1;transition:all .15s;min-width:32px}
 .rk-tri-btn:hover{background:var(--gray-bg)}
 .rk-tri-btn.on-quente{background:#fee4e4;border-color:var(--fav)}
 .rk-tri-btn.on-morno{background:var(--amber-bg);border-color:var(--amber-t)}
@@ -1017,11 +1017,10 @@ function renderRanking(){
   const triIcon={quente:'🔥',morno:'🤔',descartar:'❌'};
   const rows=items.map(({h,ex},i)=>{
     const starsBtns=[1,2,3,4,5].map(n=>`<button class="rk-star${ex.score>=n?' on':''}" onclick="event.stopPropagation();setScore(${h.id},${n})" title="${n}/5">★</button>`).join('');
-    const triBtns=`<div class="rk-tri-grp">
-      <button class="rk-tri-btn${ex.triagem==='quente'?' on-quente':''}" onclick="event.stopPropagation();setTriagem(${h.id},'quente')" title="Quente">🔥</button>
-      <button class="rk-tri-btn${ex.triagem==='morno'?' on-morno':''}" onclick="event.stopPropagation();setTriagem(${h.id},'morno')" title="Morno">🤔</button>
-      <button class="rk-tri-btn${ex.triagem==='descartar'?' on-descartar':''}" onclick="event.stopPropagation();setTriagem(${h.id},'descartar')" title="Descartar">❌</button>
-    </div>`;
+    const triMap={quente:'🔥',morno:'🤔',descartar:'❌'};
+    const triCls=ex.triagem?' on-'+ex.triagem:'';
+    const triLabel=ex.triagem?triMap[ex.triagem]:'<span style="color:var(--faint);font-size:13px">+</span>';
+    const triBtns=`<button class="rk-tri-btn${triCls}" onclick="event.stopPropagation();cycleTriagem(${h.id})" title="Clique pra alternar: 🔥 → 🤔 → ❌ → vazio">${triLabel}</button>`;
     const preco=ex.precoReal?'€'+ex.precoReal:(h.pmin?pStr(h):'<span style="color:var(--faint)">—</span>');
     const precoExtra=ex.precoReal&&h.pmin?'<span class="rk-preco-real">est. '+pStr(h)+'</span>':'';
     const linkUrl=ex.urlReal||h.site;
@@ -1072,6 +1071,7 @@ function toggleSL(id){
 }
 function removeSL(id){shortlist=shortlist.filter(x=>x!==id);saveSL();renderAll();}
 function setTriagem(id,val){const cur=getEx(id).triagem;setEx(id,'triagem',cur===val?null:val);renderAll();}
+function cycleTriagem(id){const cur=getEx(id).triagem;const next={null:'quente',quente:'morno',morno:'descartar',descartar:null}[cur===null||cur===undefined?'null':cur];setEx(id,'triagem',next);renderAll();}
 function setScore(id,val){const cur=getEx(id).score;setEx(id,'score',cur===val?0:val);renderAll();}
 function cycleStatus(id){setEx(id,'status',ST_CY[getEx(id).status]);renderAll();}
 function toggleEdit(id){const el=document.getElementById('edit-'+id);el.style.display=el.style.display==='none'?'flex':'none';}
