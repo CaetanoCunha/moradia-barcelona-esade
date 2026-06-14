@@ -101,7 +101,29 @@ textarea{resize:vertical;min-height:60px}
 .rk-link{color:var(--accent);font-size:12px;white-space:nowrap}
 .rk-notes{font-size:11px;color:var(--muted);max-width:240px;line-height:1.4}
 .rk-source{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px}
-@media(max-width:768px){.rk-table{font-size:12px}.rk-table th,.rk-table td{padding:8px 6px}.rk-notes,.rk-bairro{display:none}}
+@media(max-width:768px){.rk-table{font-size:12px}.rk-table th,.rk-table td{padding:8px 6px}.rk-notes,.rk-bairro,.rk-acao-nota{display:none}}
+
+/* ÚLTIMA AÇÃO (pipeline) */
+.rk-acao{min-width:150px;max-width:175px}
+.rk-acao-sel{font-size:11px;padding:3px 6px;border:1px solid var(--border-s);border-radius:6px;background:var(--card);cursor:pointer;font-family:inherit;width:100%;max-width:165px}
+.rk-acao-sel:focus{outline:none;border-color:var(--accent,#3b82f6)}
+.rk-acao-sel.acao-aguardando{background:#eef4fb;border-color:#bcd5ee}
+.rk-acao-sel.acao-minha_vez{background:#fdf3e7;border-color:#ecc99a;font-weight:600}
+.rk-acao-sel.acao-call_agendada{background:#f3ebf7;border-color:#dcc5e8}
+.rk-acao-sel.acao-reuniao_feita{background:#e8f3e8;border-color:#c5dec5}
+.rk-acao-sel.acao-visita_marcada{background:#e8f3e8;border-color:#c5dec5}
+.rk-acao-sel.acao-docs_solicitados{background:#fef7d8;border-color:#ecd99a}
+.rk-acao-sel.acao-negociando{background:#fff4e0;border-color:#e8c89a;font-weight:600}
+.rk-acao-sel.acao-encerrado{background:#eeeee8;border-color:var(--faint);color:var(--muted)}
+.rk-acao-meta{margin-top:4px;line-height:1}
+.rk-stale{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;letter-spacing:.2px}
+.rk-stale-fresh{color:var(--faint)}
+.rk-stale-warn{background:var(--amber-bg,#fdf3e7);color:#a86a14;border:1px solid #ecd99a}
+.rk-stale-hot{background:#fee4e4;color:var(--fav,#d94040);border:1px solid #f3b5b5}
+.rk-acao-nota{font-size:11px;color:var(--muted);margin-top:4px;cursor:text;border-radius:4px;line-height:1.35;min-height:14px;white-space:pre-wrap;word-break:break-word;transition:background .15s}
+.rk-acao-nota:hover{background:#fffbe6}
+.rk-acao-nota.editing{background:#fff;outline:2px solid var(--accent,#3b82f6);outline-offset:-2px}
+.rk-acao-nota-ph{color:var(--faint);font-style:italic}
 
 /* TRIAGEM + SCORE */
 .triagem-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 4px;padding:7px 9px;background:var(--gray-bg);border-radius:8px}
@@ -446,12 +468,14 @@ footer strong{color:var(--muted)}
         <option value="quente_morno">🔥 Quentes + 🤔 Mornos</option>
         <option value="triados">Todos triados (excl. ❌)</option>
         <option value="all">Todos os favoritos</option>
+        <option value="stale">⚠️ Precisa follow-up</option>
       </select>
       <select id="rksort" style="font-size:12px;padding:4px 8px">
         <option value="score">Sort: Score (5→1)</option>
         <option value="preco">Sort: Preço (menor→maior)</option>
         <option value="triagem">Sort: Triagem</option>
         <option value="status">Sort: Status</option>
+        <option value="acao">Sort: Última ação (mais parado)</option>
         <option value="nome">Sort: A–Z</option>
       </select>
       <button class="btn btn-sm" onclick="exportRankingCSV()" style="margin-left:auto">📊 Exportar CSV</button>
@@ -771,8 +795,8 @@ function saveApts(){save('hapts',apartments)}
 function saveExtras(){save('hextras3',extras)}
 function saveSL(){save('hsl3',shortlist)}
 
-function getEx(id){const e=extras[id]||{};return{status:e.status||'nao_contatado',userNotes:e.userNotes||'',precoReal:e.precoReal||null,availReal:e.availReal||null,urlReal:e.urlReal||null,triagem:e.triagem||null,score:e.score||0}}
-function setEx(id,k,v){if(!extras[id])extras[id]={status:'nao_contatado',userNotes:'',precoReal:null,availReal:null,triagem:null,score:0};extras[id][k]=v;saveExtras();}
+function getEx(id){const e=extras[id]||{};return{status:e.status||'nao_contatado',userNotes:e.userNotes||'',precoReal:e.precoReal||null,availReal:e.availReal||null,urlReal:e.urlReal||null,triagem:e.triagem||null,score:e.score||0,ultimaAcao:e.ultimaAcao||null,ultimaAcaoNota:e.ultimaAcaoNota||'',ultimaAcaoData:e.ultimaAcaoData||null}}
+function setEx(id,k,v){if(!extras[id])extras[id]={status:'nao_contatado',userNotes:'',precoReal:null,availReal:null,triagem:null,score:0,ultimaAcao:null,ultimaAcaoNota:'',ultimaAcaoData:null};extras[id][k]=v;saveExtras();}
 
 function pStr(h){if(h.pmin==null&&h.pmax==null)return null;if(h.pmin&&h.pmax)return`€${h.pmin}–${h.pmax}`;if(h.pmin)return`a partir de €${h.pmin}`;return`até €${h.pmax}`;}
 
@@ -998,6 +1022,16 @@ function renderApts(){
 
 function renderAll(){updateStats();updateSLBox();renderPlatforms();renderApts();renderRanking();}
 
+// ── ÚLTIMA AÇÃO (pipeline) ──────────────────────────────────────────────────
+const ACOES=[['sem_contato','⚪ Sem contato'],['aguardando','📨 Aguardando resposta'],['minha_vez','✍️ Minha vez de responder'],['call_agendada','📞 Call agendada'],['reuniao_feita','✅ Reunião feita'],['visita_marcada','👀 Visita marcada'],['docs_solicitados','📋 Docs solicitados'],['negociando','🤝 Negociando contrato'],['encerrado','❌ Encerrado']];
+const ACAO_LB=Object.fromEntries(ACOES);
+function acaoOpts(cur){const c=cur||'sem_contato';return ACOES.map(([k,l])=>`<option value="${k}"${c===k?' selected':''}>${l}</option>`).join('');}
+function staleInfo(ex){const st=ex.ultimaAcao;if(!st||st==='sem_contato'||st==='encerrado'||!ex.ultimaAcaoData)return null;const days=Math.floor((Date.now()-ex.ultimaAcaoData)/86400000);let level='fresh';if(days>=8)level='hot';else if(days>=4)level='warn';return{days,level};}
+function agoLabel(d){return d<=0?'hoje':d===1?'ontem':'há '+d+' dias';}
+function setUltimaAcao(id,val){setEx(id,'ultimaAcao',val||null);if(val&&val!=='sem_contato')extras[id].ultimaAcaoData=Date.now();else extras[id].ultimaAcaoData=null;saveExtras();renderAll();}
+function rkAcaoNotaFocus(el,id){const cur=getEx(id).ultimaAcaoNota||'';el.dataset.original=cur;el.textContent=cur;el.classList.add('editing');}
+function rkAcaoNotaSave(el,id){const val=el.textContent.trim();const cur=getEx(id).ultimaAcaoNota||'';el.classList.remove('editing');if(val===cur){renderRanking();return;}setEx(id,'ultimaAcaoNota',val);extras[id].ultimaAcaoData=Date.now();saveExtras();renderAll();}
+
 function renderRanking(){
   const wrap=document.getElementById('rk-table-wrap');
   const empty=document.getElementById('rk-empty');
@@ -1015,6 +1049,7 @@ function renderRanking(){
     if(filterVal==='quente'&&ex.triagem!=='quente')return false;
     if(filterVal==='quente_morno'&&!(ex.triagem==='quente'||ex.triagem==='morno'))return false;
     if(filterVal==='triados'&&!(ex.triagem&&ex.triagem!=='descartar'))return false;
+    if(filterVal==='stale'){const s=staleInfo(ex);if(!s||s.level==='fresh')return false;}
     if(q){
       const hay=[h.nome,h.notas,h.bairro,h.source,h.end,h.tipo,ex.userNotes,ex.urlReal||h.site].filter(Boolean).join(' ').toLowerCase();
       if(!hay.includes(q))return false;
@@ -1028,6 +1063,7 @@ function renderRanking(){
     if(sortVal==='preco')return (a.ex.precoReal||a.h.pmin||9999)-(b.ex.precoReal||b.h.pmin||9999);
     if(sortVal==='triagem')return (triOrd[a.ex.triagem]??2)-(triOrd[b.ex.triagem]??2)||(b.ex.score||0)-(a.ex.score||0);
     if(sortVal==='status')return (ST_ORD[a.ex.status]??9)-(ST_ORD[b.ex.status]??9)||(b.ex.score||0)-(a.ex.score||0);
+    if(sortVal==='acao'){const ad=a.ex.ultimaAcaoData||0,bd=b.ex.ultimaAcaoData||0;if(ad===0&&bd===0)return (b.ex.score||0)-(a.ex.score||0);if(ad===0)return 1;if(bd===0)return -1;return ad-bd;}
     return a.h.nome.localeCompare(b.h.nome);
   });
   countEl.textContent=items.length+' favorito'+(items.length!==1?'s':'')+' no ranking';
@@ -1054,6 +1090,12 @@ function renderRanking(){
     const rankCls=i===0?'rk-rank-1':i===1?'rk-rank-2':i===2?'rk-rank-3':'';
     const rowCls=ex.triagem==='quente'?'rk-quente':ex.triagem==='descartar'?'rk-descartar':'';
     const statusBtn=`<button class="status-btn ${ST_CL[ex.status]}" onclick="event.stopPropagation();cycleStatus(${h.id})" title="Clique para alterar">${ST_LB[ex.status]}</button>`;
+    const acaoSel=`<select class="rk-acao-sel acao-${ex.ultimaAcao||'sem_contato'}" onclick="event.stopPropagation()" onchange="setUltimaAcao(${h.id},this.value)" title="Estágio no funil">${acaoOpts(ex.ultimaAcao)}</select>`;
+    const stale=staleInfo(ex);
+    const staleBadge=stale?`<span class="rk-stale rk-stale-${stale.level}" title="Tempo desde a última atualização desta ação">${stale.level!=='fresh'?'⚠️ ':''}${agoLabel(stale.days)}</span>`:'';
+    const acaoNotaRaw=ex.ultimaAcaoNota||'';
+    const acaoNotaContent=acaoNotaRaw?acaoNotaRaw.replace(/</g,'&lt;'):'<span class="rk-acao-nota-ph">+ detalhe</span>';
+    const acaoCell=`${acaoSel}<div class="rk-acao-meta">${staleBadge}</div><div class="rk-acao-nota" contenteditable="true" onclick="event.stopPropagation()" onfocus="rkAcaoNotaFocus(this,${h.id})" onblur="rkAcaoNotaSave(this,${h.id})" onkeydown="rkNoteKey(event,this)" title="Detalhe da última ação (ex: 'Gemma manda pisos qua')">${acaoNotaContent}</div>`;
     return `<tr class="${rowCls}">
       <td class="rk-rank ${rankCls}">${i+1}</td>
       <td class="rk-tri">${triBtns}</td>
@@ -1061,12 +1103,13 @@ function renderRanking(){
       <td><div class="rk-nome">${tipoBadge} ${h.nome}</div><div class="rk-bairro">${h.bairro?'📍 '+h.bairro:''}${h.source?' · <span class="rk-source">'+h.source+'</span>':''}</div></td>
       <td class="rk-preco" data-id="${h.id}" onclick="rkPriceEdit(this,${h.id})" title="Clique para editar preço cotado">${preco}${precoExtra}</td>
       <td class="rk-status">${statusBtn}</td>
+      <td class="rk-acao">${acaoCell}</td>
       <td class="rk-notes" data-id="${h.id}" contenteditable="true" onfocus="rkNoteFocus(this,${h.id})" onblur="rkNoteSave(this,${h.id})" onkeydown="rkNoteKey(event,this)" title="Clique para editar nota">${notesContent}</td>
       <td class="rk-actions"><span class="rk-actions-w">${linkBtn}${removeBtn}</span></td>
     </tr>`;
   }).join('');
   wrap.innerHTML=`<table class="rk-table">
-    <thead><tr><th>#</th><th>Triagem</th><th>Score</th><th>Nome / Bairro</th><th>Preço</th><th>Status</th><th>Notas</th><th>Link</th></tr></thead>
+    <thead><tr><th>#</th><th>Triagem</th><th>Score</th><th>Nome / Bairro</th><th>Preço</th><th>Status</th><th>Última ação</th><th>Notas</th><th>Link</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 }
@@ -1078,12 +1121,16 @@ function exportRankingCSV(){
     if(filterVal==='quente')return ex.triagem==='quente';
     if(filterVal==='quente_morno')return ex.triagem==='quente'||ex.triagem==='morno';
     if(filterVal==='triados')return ex.triagem&&ex.triagem!=='descartar';
+    if(filterVal==='stale'){const s=staleInfo(ex);return s&&s.level!=='fresh';}
     return true;
   }).sort((a,b)=>(b.ex.score||0)-(a.ex.score||0));
   const esc=v=>'"'+String(v||'').replace(/"/g,'""')+'"';
-  const lines=['Posição,Tipo,Triagem,Score,Nome,Bairro,Fonte,Preço (€),Preço cotado (€),Disponível,Status,Link,Notas'];
+  const lines=['Posição,Tipo,Triagem,Score,Nome,Bairro,Fonte,Preço (€),Preço cotado (€),Disponível,Status,Última ação,Dias parado,Detalhe ação,Link,Notas'];
   filtered.forEach(({h,ex},i)=>{
-    lines.push([i+1,h.tipo||'',ex.triagem||'',ex.score||0,esc(h.nome),esc(h.bairro),esc(h.source||''),h.pmin?(h.pmin===h.pmax?h.pmin:h.pmin+'-'+h.pmax):'',ex.precoReal||'',ex.availReal||h.avail||'',ex.status||'',esc(ex.urlReal||h.site||''),esc(ex.userNotes||h.notas||'')].join(','));
+    const st=staleInfo(ex);
+    const acaoLb=ex.ultimaAcao?(ACAO_LB[ex.ultimaAcao]||ex.ultimaAcao):'';
+    const diasParado=st?st.days:'';
+    lines.push([i+1,h.tipo||'',ex.triagem||'',ex.score||0,esc(h.nome),esc(h.bairro),esc(h.source||''),h.pmin?(h.pmin===h.pmax?h.pmin:h.pmin+'-'+h.pmax):'',ex.precoReal||'',ex.availReal||h.avail||'',ex.status||'',esc(acaoLb),diasParado,esc(ex.ultimaAcaoNota||''),esc(ex.urlReal||h.site||''),esc(ex.userNotes||h.notas||'')].join(','));
   });
   const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ranking-moradia-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
