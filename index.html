@@ -721,12 +721,16 @@ let _remoteLoaded = false;
   if(novos.length){platforms=[...platforms,...novos];savePlatforms();}
 })();
 
-// Migração: garante que apartamentos novos adicionados ao BASE_APARTMENTS_FALLBACK
-// apareçam mesmo se o 'hapts' do navegador estiver congelado (espelho do migratePlatforms)
-(function migrateApartments(){
-  const localIds = new Set(apartments.map(a=>a.id));
-  const novos = BASE_APARTMENTS_FALLBACK.filter(a=>!localIds.has(a.id));
-  if(novos.length){apartments=[...apartments,...novos];saveApts();}
+// Reconciliação: os dados-BASE dos apartamentos vêm SEMPRE do código (BASE_APARTMENTS_FALLBACK),
+// preservando apenas os que o usuário adicionou manualmente (id acima do range base).
+// Garante que toda edição/adição feita no código apareça, mesmo com 'hapts' antigo congelado no navegador.
+// Dados do usuário (favoritos, score, triagem, notas) ficam em chaves separadas (hsl3/hextras3) e NÃO são afetados.
+// Tradeoff: cards-base removidos manualmente reaparecem no reload — para esconder, use a triagem ❌ Descartar.
+(function reconcileApartments(){
+  const baseIds = new Set(BASE_APARTMENTS_FALLBACK.map(a=>a.id));
+  const userAdded = apartments.filter(a => !baseIds.has(a.id));
+  apartments = [...BASE_APARTMENTS_FALLBACK, ...userAdded];
+  saveApts();
 })();
 
 // Navega para a aba de Plataformas e destaca o card da plataforma origem
