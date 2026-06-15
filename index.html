@@ -828,6 +828,18 @@ let shortlist = loadStorage('hsl3', []);
   saveExtras();
   localStorage.setItem(FLAG, '1');
 })();
+// ── Migration v5: reforço — garante favorito + 5⭐ nos 6 Atemporal (273–278), caso a v4 tenha aplicado pela metade ──
+(function migrateExtrasV5(){
+  const FLAG = 'hsl3_mig_v5';
+  if (localStorage.getItem(FLAG)) return;
+  [273,274,275,276,277,278].forEach(id=>{
+    if(!shortlist.includes(id)) shortlist.push(id);
+    if(!extras[id]) extras[id]={status:'nao_contatado',userNotes:'',precoReal:null,availReal:null,triagem:null,score:5,ultimaAcao:null,ultimaAcaoNota:'',ultimaAcaoData:null};
+    else if(!extras[id].score) extras[id].score=5;
+  });
+  save('hsl3',shortlist); saveExtras();
+  localStorage.setItem(FLAG,'1');
+})();
 let previews = [];
 let addTarget = 'platform';
 let nextId = Math.max(100, ...platforms.map(d=>d.id), ...apartments.map(d=>d.id)) + 1;
