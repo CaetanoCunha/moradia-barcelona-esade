@@ -714,6 +714,7 @@ const BASE_APARTMENTS_FALLBACK = [
   {id:292,platformId:17,nome:"🏠 Idealista — Loft Vila de Gràcia, Calle de Martí (€900) · BCNRENT",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"studio",pmin:900,pmax:900,disc:false,discInfo:null,avail:null,hb:false,notas:"⚠️ TEMPORADA — confirmar empadronamiento ANTES. Imobiliária: BCNRENT. Loft 31m² (25 úteis), espaço único c/ zona de dormir + cozinha americana equipada + mesa escritório, 1 baño c/ box e lava-roupa, armário embutido. 1º andar exterior c/ elevador, portaria, muita luz. Aquecimento elétrico. Joanic (L4). <30m² úteis = sem limite de preço. Gràcia = Tier 1.",email:null,tel:null,end:"Calle de Martí, Vila de Gràcia — Barcelona",site:"https://www.idealista.com/pt/inmueble/108441896/",dateAdded:"2026-06-26",source:"Idealista"},
   {id:293,platformId:17,nome:"🏠 Idealista — Apto 2 quartos Vila de Gràcia, Calle del Sol 3 (€1.070) · Venus Villa",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"apart",pmin:1070,pmax:1070,disc:false,discInfo:null,avail:null,hb:false,notas:"⚠️ TEMPORADA (média/longa duração) — confirmar empadronamiento ANTES. Imobiliária: Venus Villa. 75m² (74 úteis), 2 quartos (1 casal king c/ varanda + 1 solteiro), 1 baño, máx 3 pessoas. 1º andar exterior SEM elevador. Mobilado, cozinha equipada, lava-roupa, AC, sofá-cama. Terraço comunitário. Maior da lista (75m²) e melhor €/m² (14€). Preço €1.070 (pouco acima do teto) mas espaçoso — só vale solo se priorizar espaço. Rua pedonal tranquila. Gràcia = Tier 1.",email:null,tel:null,end:"Calle del Sol 3, Vila de Gràcia — Barcelona",site:"https://www.idealista.com/pt/inmueble/111656112/",dateAdded:"2026-06-26",source:"Idealista"},
   {id:294,platformId:17,nome:"🏠 Idealista — Estudio Sagrada Família, Castillejos 335 (€1.000) · Mariana",tipo:"apartamento",bairro:"Eixample",local:"barcelona",quarto:"studio",pmin:1000,pmax:1000,disc:false,discInfo:null,avail:null,hb:false,notas:"⚠️ TEMPORADA — confirmar empadronamiento ANTES. Contato: Mariana (por chat). 30m² (25 úteis), estúdio mobilado p/ 1 pessoa, 1 quarto + sala-jantar c/ cozinha americana, 1 baño, varanda. 4º andar exterior c/ elevador. ❌ Sem aquecimento. Sagrada Família, Eixample = Tier 1. Preço no teto (€1.000).",email:null,tel:null,end:"Calle de los Castillejos 335, La Sagrada Família — Barcelona",site:"https://www.idealista.com/pt/inmueble/111778094/",dateAdded:"2026-06-26",source:"Idealista"},
+  {id:295,platformId:17,nome:"🏠 Idealista — Piso 3 Hab Temporada Poble Sec (€1.068)",tipo:"apartamento",bairro:"Poble Sec",local:"barcelona",quarto:"apart",pmin:1068,pmax:1068,disc:false,discInfo:null,avail:null,hb:false,notas:"APT SÓ SEU — 64m², 3 QUARTOS, 1 baño c/ ducha, varanda/terraço, 1º andar exterior c/ elevador. TEMPORADA 32 dias–11 meses (exige documento comprovando motivo temporário, com datas início/fim). Mobilado, cozinha equipada, aquecimento central. Metro Poble Sec (L3). Anunciante AB Apartment — Grande Propietario. Fiança 2 meses (~€2.136). IBI €35/mês. Cert energético F (213 kWh/m² — luz cara). Máx 5 pessoas. NRA registrado. ⚠️ PADRÓN não mencionado no anúncio — confirmar autorização por ESCRITO antes de qualquer passo (temporada + grande propietario = risco real de recusa). ⚠️ 3 quartos p/ 1 pessoa: sublocar ou pagar sozinho. ⚠️ Poble Sec fora dos tiers priority/secondary; commute FGC via Pl. Espanya até Sant Cugat.",email:null,tel:null,end:"Poble Sec, Sants-Montjuïc — Barcelona",site:"https://www.idealista.com/pt/inmueble/109564122/",dateAdded:"2026-07-04",source:"Idealista"},
 ];
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -883,6 +884,16 @@ let shortlist = loadStorage('hsl3', []);
   if (slChanged) save('hsl3', shortlist);
   saveExtras();
   localStorage.setItem(FLAG, '1');
+})();
+// ── Migration v8: piso 3 hab Poble Sec (id 295) — favoritar + triagem QUENTE + 5⭐ (pedido do usuário) ──
+(function migrateExtrasV8(){
+  const FLAG = 'hsl3_mig_v8';
+  if (localStorage.getItem(FLAG)) return;
+  if(!shortlist.includes(295)) shortlist.push(295);
+  if(!extras[295]) extras[295]={status:'nao_contatado',userNotes:'',precoReal:null,availReal:null,triagem:'quente',score:5,ultimaAcao:null,ultimaAcaoNota:'',ultimaAcaoData:null};
+  else { extras[295].triagem='quente'; extras[295].score=5; }
+  save('hsl3',shortlist); saveExtras();
+  localStorage.setItem(FLAG,'1');
 })();
 let previews = [];
 let addTarget = 'platform';
