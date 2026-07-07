@@ -155,6 +155,28 @@ textarea{resize:vertical;min-height:60px}
 .tab{padding:7px 18px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--muted);transition:all .15s}
 .tab.active{background:var(--accent);color:#fff}
 .tab-content{display:none}.tab-content.active{display:block}
+.ag-block{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.ag-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.ag-head-l{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ag-tipo{font-size:11px;font-weight:600;color:var(--muted);background:var(--gray-bg);padding:2px 8px;border-radius:6px}
+.ag-nome{font-size:15px;font-weight:600}
+.ag-bairro{font-size:12px;color:var(--muted)}
+.ag-pipe{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+.ag-ago{font-size:11px;color:var(--faint)}
+.ag-nota-acao{font-size:12px;color:var(--amber-t);background:var(--amber-bg);padding:3px 8px;border-radius:6px}
+.ag-contato{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;margin:6px 0}
+.ag-dot{color:var(--faint)}
+.ag-note{font-size:12px;color:var(--muted);line-height:1.5;margin:6px 0;padding:8px 10px;background:var(--bg);border-radius:8px}
+.ag-apts{margin-top:10px;border-top:1px dashed var(--border);padding-top:8px}
+.ag-apts-h{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.ag-apts-n{background:var(--fav);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;margin-left:4px}
+.ag-apt{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;font-size:13px}
+.ag-apt:hover{background:var(--bg)}
+.ag-apt-tri{min-width:22px}
+.ag-apt-nome{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ag-apt-preco{color:var(--green-t);font-weight:600;font-size:12px}
+.ag-apt-link{font-size:12px}
+.ag-apt-empty{font-size:12px;color:var(--faint);padding:4px 8px;font-style:italic}
 
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:1.25rem}
@@ -332,6 +354,7 @@ footer strong{color:var(--muted)}
   <button class="tab active" onclick="switchTab('platforms')">🏢 Plataformas & Residências</button>
   <button class="tab" onclick="switchTab('apartments')">🏠 Apartamentos Específicos</button>
   <button class="tab" onclick="switchTab('ranking')">🏆 Ranking</button>
+  <button class="tab" onclick="switchTab('agencias')">🏛 Pipeline Agências</button>
 </div>
 
 <!-- STATS -->
@@ -488,6 +511,31 @@ footer strong{color:var(--muted)}
   <div class="empty" id="rk-empty" style="display:none">
     <span class="empty-icon">🏆</span>
     <p>Nenhum favorito ainda no filtro selecionado.<br>Favorite (♡) e marque triagem (🔥/🤔) nas outras abas.</p>
+  </div>
+</div>
+
+<div id="tab-agencias" class="tab-content">
+  <div class="filter-panel">
+    <div class="frow" style="align-items:center">
+      <span class="flabel" style="font-size:14px;font-weight:600">🏛 Pipeline de Agências</span>
+      <input type="text" id="agq" placeholder="buscar agência..." style="width:200px" oninput="renderAgencias()">
+      <select id="agfilter" style="font-size:12px;padding:4px 8px" onchange="renderAgencias()">
+        <option value="ativas">Só com quem tenho contato</option>
+        <option value="all">Todas as agências</option>
+      </select>
+      <select id="agsort" style="font-size:12px;padding:4px 8px" onchange="renderAgencias()">
+        <option value="funil">Sort: Estágio no funil</option>
+        <option value="favs">Sort: Nº de favoritos</option>
+        <option value="nome">Sort: A–Z</option>
+      </select>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:6px">Cada agência mostra o estágio no funil (editável) e os apartamentos que você marcou 🔥 ou favoritou (♡) dela. Para vincular um imóvel a uma agência, use o campo "Agência/Plataforma" ao adicionar ou editar o apartamento.</p>
+  </div>
+  <div class="count-bar"><span class="count-txt" id="ag-count"></span></div>
+  <div id="ag-list"></div>
+  <div class="empty" id="ag-empty" style="display:none">
+    <span class="empty-icon">🏛</span>
+    <p>Nenhuma agência no filtro selecionado.</p>
   </div>
 </div>
 
@@ -972,12 +1020,12 @@ function pStr(h){if(h.pmin==null&&h.pmax==null)return null;if(h.pmin&&h.pmax)ret
 // ── TABS ──────────────────────────────────────────────────────────────────────
 function switchTab(tab){
   currentTab=tab;
-  const idx={platforms:0,apartments:1,ranking:2}[tab]??0;
+  const idx={platforms:0,apartments:1,ranking:2,agencias:3}[tab]??0;
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
   document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
-  // Hide stats + shortlist box on ranking tab (own UI)
-  const showSecondary=tab!=='ranking';
+  // Hide stats + shortlist box on ranking & agencias tabs (own UI)
+  const showSecondary=tab!=='ranking'&&tab!=='agencias';
   document.querySelector('.stats').style.display=showSecondary?'':'none';
   const slBox=document.querySelector('.sl-box');
   if(slBox)slBox.style.display=showSecondary?'':'none';
@@ -1190,7 +1238,7 @@ function renderApts(){
   grid.innerHTML=filtered.map(h=>buildCard(h)).join('');
 }
 
-function renderAll(){updateStats();updateSLBox();renderPlatforms();renderApts();renderRanking();}
+function renderAll(){updateStats();updateSLBox();renderPlatforms();renderApts();renderRanking();renderAgencias();}
 
 // ── ÚLTIMA AÇÃO (pipeline) ──────────────────────────────────────────────────
 const ACOES=[['sem_contato','⚪ Sem contato'],['aguardando','📨 Aguardando resposta'],['minha_vez','✍️ Minha vez de responder'],['call_agendada','📞 Call agendada'],['reuniao_feita','✅ Reunião feita'],['visita_marcada','👀 Visita marcada'],['docs_solicitados','📋 Docs solicitados'],['negociando','🤝 Negociando contrato'],['encerrado','❌ Encerrado']];
@@ -1282,6 +1330,77 @@ function renderRanking(){
     <thead><tr><th>#</th><th>Triagem</th><th>Score</th><th>Nome / Bairro</th><th>Preço</th><th>Status</th><th>Última ação</th><th>Notas</th><th>Link</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
+}
+
+// ── PIPELINE DE AGÊNCIAS (CRM) ──────────────────────────────────────────────
+const AG_TIPOS=['agencia','plataforma','residencia','coliving','portal'];
+function renderAgencias(){
+  const list=document.getElementById('ag-list');
+  if(!list)return;
+  const empty=document.getElementById('ag-empty');
+  const countEl=document.getElementById('ag-count');
+  const q=(document.getElementById('agq')?document.getElementById('agq').value:'').toLowerCase().trim();
+  const filterVal=document.getElementById('agfilter')?document.getElementById('agfilter').value:'ativas';
+  const sortVal=document.getElementById('agsort')?document.getElementById('agsort').value:'funil';
+  const funilOrd={negociando:0,docs_solicitados:1,visita_marcada:2,reuniao_feita:3,call_agendada:4,minha_vez:5,aguardando:6,sem_contato:7,null:8,encerrado:9};
+  let ags=platforms.filter(p=>AG_TIPOS.includes(p.tipo)).map(h=>{
+    const ex=getEx(h.id);
+    const linked=apartments.filter(a=>a.platformId===h.id && (shortlist.includes(a.id)||getEx(a.id).triagem==='quente'));
+    return {h,ex,linked};
+  });
+  if(filterVal==='ativas'){
+    ags=ags.filter(({ex,linked})=> ex.status!=='nao_contatado' || (ex.ultimaAcao&&ex.ultimaAcao!=='sem_contato') || linked.length>0 );
+  }
+  if(q){ ags=ags.filter(({h,ex})=>[h.nome,h.notas,h.bairro,ex.userNotes,ex.ultimaAcaoNota].filter(Boolean).join(' ').toLowerCase().includes(q)); }
+  ags.sort((a,b)=>{
+    if(sortVal==='nome')return a.h.nome.localeCompare(b.h.nome);
+    if(sortVal==='favs')return b.linked.length-a.linked.length || a.h.nome.localeCompare(b.h.nome);
+    return (funilOrd[a.ex.ultimaAcao]??8)-(funilOrd[b.ex.ultimaAcao]??8) || b.linked.length-a.linked.length;
+  });
+  countEl.textContent=ags.length+' agência'+(ags.length!==1?'s':'');
+  if(!ags.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const tipoMap={agencia:'🏛 Agência',plataforma:'🌐 Plataforma',residencia:'🏢 Residência',coliving:'👥 Coliving',portal:'🌐 Portal'};
+  const triIcon={quente:'🔥',morno:'🤔',descartar:'❌'};
+  list.innerHTML=ags.map(({h,ex,linked})=>{
+    const acaoSel=`<select class="rk-acao-sel acao-${ex.ultimaAcao||'sem_contato'}" onchange="setUltimaAcao(${h.id},this.value)" title="Estágio no funil">${acaoOpts(ex.ultimaAcao)}</select>`;
+    const statusBtn=`<button class="status-btn ${ST_CL[ex.status]}" onclick="cycleStatus(${h.id})" title="Clique para alterar">${ST_LB[ex.status]}</button>`;
+    const stale=staleInfo(ex);
+    const staleBadge=stale?(stale.level!=='fresh'?`<span class="rk-stale rk-stale-${stale.level}">⚠️ ${agoLabel(stale.days)}</span>`:`<span class="ag-ago">${agoLabel(stale.days)}</span>`):'';
+    const contato=[h.tel?`<a href="tel:${h.tel}">📞 ${h.tel}</a>`:'',h.email?`<a href="mailto:${h.email}">✉️ ${h.email}</a>`:'',h.site?`<a href="${h.site}" target="_blank">🔗 site</a>`:''].filter(Boolean).join('<span class="ag-dot">·</span>');
+    const notaAcao=ex.ultimaAcaoNota?`<div class="ag-nota-acao">📝 ${ex.ultimaAcaoNota.replace(/</g,'&lt;')}</div>`:'';
+    const noteBase=h.notas?`<div class="ag-note">${h.notas.replace(/</g,'&lt;')}</div>`:'';
+    let aptRows;
+    if(linked.length){
+      aptRows=linked.map(a=>{
+        const aex=getEx(a.id);
+        const tri=aex.triagem?triIcon[aex.triagem]:'';
+        const preco=aex.precoReal?'€'+aex.precoReal:(a.pmin?pStr(a):'—');
+        const link=(aex.urlReal||a.site)?`<a href="${aex.urlReal||a.site}" target="_blank" class="ag-apt-link">🔗</a>`:'';
+        const fav=shortlist.includes(a.id)?'♥':'';
+        return `<div class="ag-apt"><span class="ag-apt-tri">${tri}${fav}</span><span class="ag-apt-nome">${a.nome}</span><span class="ag-apt-preco">${preco}</span>${link}</div>`;
+      }).join('');
+    } else {
+      aptRows=`<div class="ag-apt-empty">Nenhum apto 🔥/favoritado desta agência ainda. Marque 🔥 ou ♡ num imóvel dela pra aparecer aqui.</div>`;
+    }
+    return `<div class="ag-block">
+      <div class="ag-head">
+        <div class="ag-head-l">
+          <span class="ag-tipo">${tipoMap[h.tipo]||h.tipo}</span>
+          <span class="ag-nome">${h.nome}</span>
+          ${h.bairro&&h.bairro!=='Múltiplos'?`<span class="ag-bairro">📍 ${h.bairro}</span>`:''}
+        </div>
+        <div class="ag-head-r">${statusBtn}</div>
+      </div>
+      <div class="ag-pipe">${acaoSel}${staleBadge}${notaAcao}</div>
+      ${contato?`<div class="ag-contato">${contato}</div>`:''}
+      ${noteBase}
+      <div class="ag-apts">
+        <div class="ag-apts-h">🔥 Apartamentos que estou olhando <span class="ag-apts-n">${linked.length}</span></div>
+        ${aptRows}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function exportRankingCSV(){
