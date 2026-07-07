@@ -609,7 +609,7 @@ const BASE_PLATFORMS = [
   {id:39,nome:"Unicco Bcn",tipo:"agencia",bairro:"Gràcia",local:"barcelona",quarto:"various",pmin:null,pmax:null,disc:false,discInfo:null,avail:null,hb:false,notas:"📨 CONTATADO — aguardando resposta a um retorno que dei. Imobiliária TRADICIONAL (aluguel habitual + venda), forte em Gràcia (Torrent de l'Olla). Atende estrangeiros (equipe Eldad/Magali, docs em inglês), bem avaliada (4,9★). ✅ PADRÓN favorável: contrato habitual normalmente permite empadronamiento (≠ temporada). ⚠️ CONFIRMAR: se oferecem 11 meses/temporada ou só contrato longo (5 anos), e se aceitam estudante estrangeiro SEM NIE/nómina (aluguel tradicional costuma exigir aval/solvência).",email:null,tel:null,end:"Torrent de l'Olla, 174 — Gràcia, Barcelona",site:"https://www.uniccobcn.com/"},
   {id:40,nome:"All 4 Flat",tipo:"agencia",bairro:"Eixample",local:"barcelona",quarto:"various",pmin:null,pmax:null,disc:false,discInfo:null,avail:null,hb:false,notas:"📨 CONTATADO — sem retorno deles ainda. Agência MISTA (aluguel habitual + temporada + gestão Airbnb + venda). ⚠️ FILTRO DE ENTRADA PESADO: processo para estudante exige FIADOR SOLIDÁRIO espanhol (contrato de trabalho + 3 últimas nóminas + histórico laboral + ID do fiador). Pré-chegada sem NIE isso trava. ⚠️ PADRÓN varia (fazem long e temporada) — depende do imóvel. PERGUNTAR: aceitam fiador estrangeiro/família, depósito reforçado ou seguro de aluguel no lugar do aval?",email:null,tel:null,end:"Eixample, Barcelona",site:"https://all4flat.com/en"},
   {id:41,nome:"BCN Rent",tipo:"agencia",bairro:"Gràcia",local:"barcelona",quarto:"various",pmin:900,pmax:900,disc:false,discInfo:null,avail:null,hb:false,notas:"📨 CONTATADO — aguardando resposta a um retorno que dei (lead de 06/07). Contato: Fito. Listing IP-00991: loft TEMPORADA em Vila de Gràcia (Calle Martí), €900/mês, 30m², cozinha+banheiro privativos, mobiliado, depósito 2 meses. ⚠️ PADRÓN em risco: temporada sob Ley 11/2025 — exigir autorização de empadronamiento POR ESCRITO no contrato antes de avançar (verbal não vale). FGC indireto: metro Joanic L4 → transbordo Gràcia/Provença → FGC Sant Cugat.",email:null,tel:"+34 619 25 88 15",end:"Vila de Gràcia, Barcelona",site:"https://bcnrent.com"},
-  {id:42,nome:"AB Apartment Barcelona",tipo:"agencia",bairro:"Ciutat Vella",local:"barcelona",quarto:"various",pmin:null,pmax:null,disc:false,discInfo:null,avail:null,hb:false,notas:"❌ DESCARTADA — recusa de padrón CONFIRMADA. Agência de aluguel short/mid/long term (Barceloneta, Almirall Cervera 6). Não permite empadronamiento → inviável para a TIE chain. Manter arquivada salvo mudança de política.",email:null,tel:"+34 934 813 577",end:"Almirall Cervera, 6 — Barceloneta, Barcelona",site:"https://www.apartmentbarcelona.com/"}
+  {id:42,nome:"AB Apartment Barcelona",tipo:"agencia",bairro:"Ciutat Vella",local:"barcelona",quarto:"various",pmin:null,pmax:null,disc:false,discInfo:null,avail:null,hb:false,notas:"📨 CONTATADO — aguardando resposta ESCRITA sobre padrón (NÃO descartado). Agência de temporada (pisos inteiros), Barceloneta (Almirall Cervera 6). 1ª resposta foi EVASIVA: mandaram template de docs pra estância temporal (incl. 'certificado de dirección na cidade de origem', que sustenta o caráter temporada) sem responder sobre padrón. 2º email enviado perguntando diretamente se permite empadronamiento com autorização no contrato + disponibilidade setembro. ⚠️ Estratégia: alguns proprietários de temporada aceitam — deixar eles dizerem QUAIS imóveis permitem. NÃO pré-reservar/pagar antes da confirmação escrita. Tem 5 imóveis no tracker (283,284,287,290,295) via Idealista. Task Notion criada (prazo 10/07).",email:"info@apartmentbarcelona.com",tel:"+34 934 813 577",end:"Almirall Cervera, 6 — Barceloneta, Barcelona",site:"https://www.apartmentbarcelona.com/"}
 ];
 
 const TIPO_CL={residencia:'b-res',coliving:'b-col',plataforma:'b-pla',agencia:'b-age',portal:'b-por',apartamento:'b-apt'};
@@ -738,11 +738,15 @@ let _remoteLoaded = false;
   }
 })();
 
-// Migração: garante que novas plataformas adicionadas ao BASE_PLATFORMS apareçam no localStorage
-(function migratePlatforms(){
-  const localIds = new Set(platforms.map(p=>p.id));
-  const novos = BASE_PLATFORMS.filter(p=>!localIds.has(p.id));
-  if(novos.length){platforms=[...platforms,...novos];savePlatforms();}
+// Reconciliação: os dados-BASE das plataformas vêm SEMPRE do código (BASE_PLATFORMS),
+// preservando apenas as que o usuário adicionou manualmente (id fora do range base, >=101).
+// Assim, edições de nota/status/contato feitas no código aparecem mesmo com 'hplat' antigo no navegador.
+// Dados do usuário (favoritos, score, triagem, notas, pipeline) ficam em hsl3/hextras3 e NÃO são afetados.
+(function reconcilePlatforms(){
+  const baseIds = new Set(BASE_PLATFORMS.map(p=>p.id));
+  const userAdded = platforms.filter(p => !baseIds.has(p.id));
+  platforms = [...BASE_PLATFORMS, ...userAdded];
+  savePlatforms();
 })();
 
 // Reconciliação: os dados-BASE dos apartamentos vêm SEMPRE do código (BASE_APARTMENTS_FALLBACK),
@@ -933,6 +937,15 @@ let shortlist = loadStorage('hsl3', []);
   setEx(40, {status:'contatado', ultimaAcao:'aguardando', ultimaAcaoNota:'Contatado — sem retorno deles ainda', ultimaAcaoData:now});
   setEx(41, {status:'contatado', ultimaAcao:'aguardando', ultimaAcaoNota:'Aguardando resposta a retorno meu (lead 06/07)', ultimaAcaoData:now});
   setEx(42, {status:'indisponivel', ultimaAcao:'encerrado', ultimaAcaoNota:'Recusa de padrón confirmada — descartada', ultimaAcaoData:now});
+  saveExtras();
+  localStorage.setItem(FLAG, '1');
+})();
+// ── Migration v12: CORREÇÃO do AB Apartment (42) — não está descartado; aguarda resposta escrita sobre padrón ──
+(function migrateExtrasV12(){
+  const FLAG = 'hsl3_mig_v12';
+  if (localStorage.getItem(FLAG)) return;
+  if (!extras[42]) extras[42] = {status:'contatado',userNotes:'',precoReal:null,availReal:null,triagem:null,score:5,ultimaAcao:'aguardando',ultimaAcaoNota:'Aguardando resposta escrita sobre padrón (2º email enviado)',ultimaAcaoData:Date.now()};
+  else { extras[42].status='contatado'; extras[42].ultimaAcao='aguardando'; extras[42].ultimaAcaoNota='Aguardando resposta escrita sobre padrón (2º email enviado)'; extras[42].ultimaAcaoData=Date.now(); }
   saveExtras();
   localStorage.setItem(FLAG, '1');
 })();
