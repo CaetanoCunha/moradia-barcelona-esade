@@ -177,6 +177,17 @@ textarea{resize:vertical;min-height:60px}
 .ag-apt-preco{color:var(--green-t);font-weight:600;font-size:12px}
 .ag-apt-link{font-size:12px}
 .ag-apt-empty{font-size:12px;color:var(--faint);padding:4px 8px;font-style:italic}
+.ag-apt-unlink{background:none;border:none;color:var(--faint);cursor:pointer;font-size:12px;padding:0 4px;opacity:.5}
+.ag-apt-unlink:hover{opacity:1;color:var(--red-t)}
+.ag-apts-filter{font-size:11px;font-weight:500;color:var(--faint)}
+.ag-add-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.ag-add-btn{font-size:12px;padding:5px 10px;border-radius:7px;border:1px dashed var(--border-s);background:none;color:var(--accent);cursor:pointer}
+.ag-add-btn:hover{background:var(--accent-light);border-style:solid}
+.link-item{padding:9px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer}
+.link-item:hover{background:var(--accent-light);border-color:var(--accent)}
+.link-item-nome{font-size:13px;font-weight:500;margin-bottom:2px}
+.link-item-meta{font-size:11px;color:var(--muted)}
+.link-item-cur{color:var(--faint)}
 
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:1.25rem}
@@ -528,6 +539,14 @@ footer strong{color:var(--muted)}
         <option value="favs">Sort: Nº de favoritos</option>
         <option value="nome">Sort: A–Z</option>
       </select>
+      <select id="agaptfilter" style="font-size:12px;padding:4px 8px" onchange="renderAgencias()" title="Quais apartamentos mostrar sob cada agência">
+        <option value="fav_quente">Aptos: 🔥 + ♥ favoritos</option>
+        <option value="quente">Aptos: só 🔥 quentes</option>
+        <option value="fav">Aptos: só ♥ favoritos</option>
+        <option value="5">Aptos: só 5★</option>
+        <option value="4">Aptos: ≥ 4★</option>
+        <option value="all">Aptos: todos vinculados</option>
+      </select>
     </div>
     <p style="font-size:12px;color:var(--muted);margin-top:6px">Cada agência mostra o estágio no funil (editável) e os apartamentos que você marcou 🔥 ou favoritou (♡) dela. Para vincular um imóvel a uma agência, use o campo "Agência/Plataforma" ao adicionar ou editar o apartamento.</p>
   </div>
@@ -553,6 +572,7 @@ footer strong{color:var(--muted)}
       <div class="mrow" style="grid-column:1/-1"><label>Nome / Descrição *</label><input id="m-nome" placeholder="Ex: Quarto individual — Gràcia, perto da Fontana"></div>
       <div class="mrow"><label>Tipo</label><select id="m-tipo"><option value="residencia">Residência</option><option value="coliving">Coliving</option><option value="plataforma">Plataforma</option><option value="agencia">Agência</option><option value="portal">Portal</option><option value="apartamento">Apartamento específico</option></select></div>
       <div class="mrow"><label>Quarto</label><select id="m-quarto"><option value="shared">Compartilhado</option><option value="single">Individual</option><option value="studio">Studio</option><option value="apart">Apartamento</option></select></div>
+      <div class="mrow" id="m-platform-row" style="grid-column:1/-1;display:none"><label>Vincular à agência/plataforma</label><select id="m-platform"><option value="">— nenhuma —</option></select></div>
       <div class="mrow"><label>Preço mín (€/mês)</label><input id="m-pmin" type="number" placeholder="650"></div>
       <div class="mrow"><label>Preço máx (€/mês)</label><input id="m-pmax" type="number" placeholder="850"></div>
       <div class="mrow"><label>Bairro</label><input id="m-bairro" placeholder="Ex: Gràcia"></div>
@@ -568,6 +588,17 @@ footer strong{color:var(--muted)}
       <button class="btn" onclick="closeAddModal()">Cancelar</button>
       <button class="btn btn-primary" onclick="saveNewListing()">Salvar</button>
     </div>
+  </div>
+</div>
+
+<!-- LINK APT MODAL -->
+<div class="modal-bg" id="link-modal" onclick="if(event.target===this)closeLinkModal()">
+  <div class="modal">
+    <h2>🔗 Vincular apartamento a <span id="link-ag-nome" style="color:var(--accent)"></span></h2>
+    <p style="font-size:12px;color:var(--muted)">Clique num apto para vinculá-lo a esta agência. Útil p/ imóveis salvos como "Idealista" que na verdade são de uma agência específica. O vínculo é salvo e sobrevive a atualizações.</p>
+    <input id="link-search" placeholder="buscar apto por nome, bairro..." oninput="renderLinkList()" style="width:100%">
+    <div id="link-list" style="max-height:52vh;overflow-y:auto;margin-top:4px"></div>
+    <div class="mactions"><button class="btn" onclick="closeLinkModal()">Fechar</button></div>
   </div>
 </div>
 
@@ -853,6 +884,13 @@ async function loadRemoteApartments() {
 loadRemoteApartments();
 let extras = loadStorage('hextras3', {});
 let shortlist = loadStorage('hsl3', []);
+
+// Persistência de re-vínculos agência↔apto feitos na UI: o platformId dos aptos-base
+// é resetado pela reconciliação (vem do código), então guardamos o override em extras[id]
+// (hextras3 não é sobrescrito) e reaplicamos aqui, após extras carregar.
+(function applyPlatformOverrides(){
+  apartments.forEach(a=>{const ov=(extras[a.id]||{}).platformIdOverride;if(ov)a.platformId=ov;});
+})();
 
 // ── Migration v1: auto-favoritar 9 apartamentos recém-curados (Atemporal + Habitatge Jove) ──
 (function migrateShortlistV1(){
@@ -1343,13 +1381,17 @@ function renderAgencias(){
   const filterVal=document.getElementById('agfilter')?document.getElementById('agfilter').value:'ativas';
   const sortVal=document.getElementById('agsort')?document.getElementById('agsort').value:'funil';
   const funilOrd={negociando:0,docs_solicitados:1,visita_marcada:2,reuniao_feita:3,call_agendada:4,minha_vez:5,aguardando:6,sem_contato:7,null:8,encerrado:9};
+  const aptFilter=document.getElementById('agaptfilter')?document.getElementById('agaptfilter').value:'fav_quente';
+  const aptMatch=(a)=>{const ex=getEx(a.id);if(aptFilter==='all')return true;if(aptFilter==='quente')return ex.triagem==='quente';if(aptFilter==='fav')return shortlist.includes(a.id);if(aptFilter==='5')return ex.score>=5;if(aptFilter==='4')return ex.score>=4;return shortlist.includes(a.id)||ex.triagem==='quente';};
+  const aptFilterLb={fav_quente:'🔥 + ♥ favoritos',quente:'🔥 quentes',fav:'♥ favoritos','5':'5★','4':'≥4★',all:'todos vinculados'}[aptFilter]||'';
   let ags=platforms.filter(p=>AG_TIPOS.includes(p.tipo)).map(h=>{
     const ex=getEx(h.id);
-    const linked=apartments.filter(a=>a.platformId===h.id && (shortlist.includes(a.id)||getEx(a.id).triagem==='quente'));
-    return {h,ex,linked};
+    const allLinked=apartments.filter(a=>a.platformId===h.id);
+    const linked=allLinked.filter(aptMatch);
+    return {h,ex,linked,total:allLinked.length};
   });
   if(filterVal==='ativas'){
-    ags=ags.filter(({ex,linked})=> ex.status!=='nao_contatado' || (ex.ultimaAcao&&ex.ultimaAcao!=='sem_contato') || linked.length>0 );
+    ags=ags.filter(({ex,total})=> ex.status!=='nao_contatado' || (ex.ultimaAcao&&ex.ultimaAcao!=='sem_contato') || total>0 );
   }
   if(q){ ags=ags.filter(({h,ex})=>[h.nome,h.notas,h.bairro,ex.userNotes,ex.ultimaAcaoNota].filter(Boolean).join(' ').toLowerCase().includes(q)); }
   ags.sort((a,b)=>{
@@ -1362,7 +1404,7 @@ function renderAgencias(){
   empty.style.display='none';
   const tipoMap={agencia:'🏛 Agência',plataforma:'🌐 Plataforma',residencia:'🏢 Residência',coliving:'👥 Coliving',portal:'🌐 Portal'};
   const triIcon={quente:'🔥',morno:'🤔',descartar:'❌'};
-  list.innerHTML=ags.map(({h,ex,linked})=>{
+  list.innerHTML=ags.map(({h,ex,linked,total})=>{
     const acaoSel=`<select class="rk-acao-sel acao-${ex.ultimaAcao||'sem_contato'}" onchange="setUltimaAcao(${h.id},this.value)" title="Estágio no funil">${acaoOpts(ex.ultimaAcao)}</select>`;
     const statusBtn=`<button class="status-btn ${ST_CL[ex.status]}" onclick="cycleStatus(${h.id})" title="Clique para alterar">${ST_LB[ex.status]}</button>`;
     const stale=staleInfo(ex);
@@ -1375,14 +1417,17 @@ function renderAgencias(){
       aptRows=linked.map(a=>{
         const aex=getEx(a.id);
         const tri=aex.triagem?triIcon[aex.triagem]:'';
-        const preco=aex.precoReal?'€'+aex.precoReal:(a.pmin?pStr(a):'—');
-        const link=(aex.urlReal||a.site)?`<a href="${aex.urlReal||a.site}" target="_blank" class="ag-apt-link">🔗</a>`:'';
         const fav=shortlist.includes(a.id)?'♥':'';
-        return `<div class="ag-apt"><span class="ag-apt-tri">${tri}${fav}</span><span class="ag-apt-nome">${a.nome}</span><span class="ag-apt-preco">${preco}</span>${link}</div>`;
+        const stars=aex.score?' '+aex.score+'★':'';
+        const preco=aex.precoReal?'€'+aex.precoReal:(a.pmin?pStr(a):'—');
+        const link=(aex.urlReal||a.site)?`<a href="${aex.urlReal||a.site}" target="_blank" class="ag-apt-link" onclick="event.stopPropagation()">🔗</a>`:'';
+        const unlink=`<button class="ag-apt-unlink" onclick="unlinkApt(${a.id})" title="Desvincular desta agência (restaura a origem)">✕</button>`;
+        return `<div class="ag-apt"><span class="ag-apt-tri">${tri}${fav}${stars}</span><span class="ag-apt-nome">${a.nome}</span><span class="ag-apt-preco">${preco}</span>${link}${unlink}</div>`;
       }).join('');
     } else {
-      aptRows=`<div class="ag-apt-empty">Nenhum apto 🔥/favoritado desta agência ainda. Marque 🔥 ou ♡ num imóvel dela pra aparecer aqui.</div>`;
+      aptRows=`<div class="ag-apt-empty">${total>0?`${total} apto(s) vinculado(s), mas nenhum no filtro "${aptFilterLb}".`:'Nenhum apto vinculado ainda. Use os botões abaixo pra vincular um existente ou criar um novo.'}</div>`;
     }
+    const agBtns=`<div class="ag-add-row"><button class="ag-add-btn" onclick="openLinkModal(${h.id})">🔗 Vincular apto existente</button><button class="ag-add-btn" onclick="openAddModal('apartment',${h.id})">＋ Novo apto aqui</button></div>`;
     return `<div class="ag-block">
       <div class="ag-head">
         <div class="ag-head-l">
@@ -1396,11 +1441,52 @@ function renderAgencias(){
       ${contato?`<div class="ag-contato">${contato}</div>`:''}
       ${noteBase}
       <div class="ag-apts">
-        <div class="ag-apts-h">🔥 Apartamentos que estou olhando <span class="ag-apts-n">${linked.length}</span></div>
+        <div class="ag-apts-h">Apartamentos <span class="ag-apts-filter">${aptFilterLb}</span> <span class="ag-apts-n">${linked.length}</span></div>
         ${aptRows}
+        ${agBtns}
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Vincular apto existente a uma agência (re-vínculo persistente) ──
+let linkAgId=null;
+function openLinkModal(agId){
+  linkAgId=agId;
+  const ag=platforms.find(p=>p.id===agId);
+  document.getElementById('link-ag-nome').textContent=ag?ag.nome:'';
+  document.getElementById('link-search').value='';
+  document.getElementById('link-modal').classList.add('show');
+  renderLinkList();
+}
+function closeLinkModal(){document.getElementById('link-modal').classList.remove('show');}
+function renderLinkList(){
+  const q=document.getElementById('link-search').value.toLowerCase().trim();
+  const box=document.getElementById('link-list');
+  let items=apartments.filter(a=>a.platformId!==linkAgId);
+  if(q)items=items.filter(a=>[a.nome,a.bairro,a.source,a.notas].filter(Boolean).join(' ').toLowerCase().includes(q));
+  items=items.slice(0,50);
+  if(!items.length){box.innerHTML='<p style="color:var(--faint);font-size:13px;padding:10px">Nenhum apto encontrado.</p>';return;}
+  box.innerHTML=items.map(a=>{
+    const cur=platforms.find(p=>p.id===a.platformId);
+    const curLb=cur?`atual: ${cur.nome}`:'sem agência';
+    const preco=a.pmin?'€'+a.pmin:'—';
+    return `<div class="link-item" onclick="linkApt(${a.id})"><div class="link-item-nome">${a.nome}</div><div class="link-item-meta">${a.bairro||'—'} · ${preco} · <span class="link-item-cur">${curLb}</span></div></div>`;
+  }).join('');
+}
+function linkApt(aptId){
+  const a=apartments.find(x=>x.id===aptId);if(!a)return;
+  a.platformId=linkAgId;
+  setEx(aptId,'platformIdOverride',linkAgId); // persiste apesar da reconciliação
+  saveApts();
+  renderLinkList();renderAll();
+}
+function unlinkApt(aptId){
+  const a=apartments.find(x=>x.id===aptId);if(!a)return;
+  if(extras[aptId]){delete extras[aptId].platformIdOverride;saveExtras();}
+  const base=BASE_APARTMENTS_FALLBACK.find(x=>x.id===aptId);
+  a.platformId=base?base.platformId:null; // restaura origem do código (ou desvincula se user-added)
+  saveApts();renderAll();
 }
 
 function exportRankingCSV(){
@@ -1508,20 +1594,32 @@ function copiarContatos(){
 }
 
 // ── ADD MODAL ─────────────────────────────────────────────────────────────────
-function openAddModal(target){
+function openAddModal(target,presetPlatformId){
   addTarget=target;
   document.getElementById('add-modal-title').textContent=target==='apartment'?'+ Adicionar Apartamento':'+ Adicionar Plataforma/Residência';
+  const sel=document.getElementById('m-platform');
+  if(sel){
+    const ops=platforms.filter(p=>AG_TIPOS.includes(p.tipo)).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+    sel.innerHTML='<option value="">— nenhuma —</option>'+ops;
+    sel.value=presetPlatformId?String(presetPlatformId):'';
+    if(presetPlatformId)document.getElementById('m-tipo').value='apartamento';
+    const row=document.getElementById('m-platform-row');
+    if(row)row.style.display=(target==='apartment')?'':'none';
+  }
   document.getElementById('add-modal').classList.add('show');
 }
 function closeAddModal(){document.getElementById('add-modal').classList.remove('show');}
 function saveNewListing(){
   const nome=document.getElementById('m-nome').value.trim();
   if(!nome){alert('Nome é obrigatório.');return;}
+  const pidVal=document.getElementById('m-platform')?document.getElementById('m-platform').value:'';
+  const pid=pidVal?parseInt(pidVal):null;
   const novo={id:nextId++,nome,tipo:document.getElementById('m-tipo').value,bairro:document.getElementById('m-bairro').value||'Barcelona',local:'barcelona',quarto:document.getElementById('m-quarto').value,pmin:parseInt(document.getElementById('m-pmin').value)||null,pmax:parseInt(document.getElementById('m-pmax').value)||null,disc:!!document.getElementById('m-disc').value,discInfo:document.getElementById('m-disc').value||null,avail:document.getElementById('m-avail').value||null,hb:false,notas:document.getElementById('m-notas').value||'',email:document.getElementById('m-email').value||null,tel:document.getElementById('m-tel').value||null,end:document.getElementById('m-end').value||null,site:document.getElementById('m-site').value||null,dateAdded:new Date().toISOString().slice(0,10)};
-  if(addTarget==='apartment'){apartments.push(novo);saveApts();}
+  if(addTarget==='apartment'){if(pid)novo.platformId=pid;apartments.push(novo);saveApts();}
   else{platforms.push(novo);savePlatforms();}
   closeAddModal();
   ['m-nome','m-bairro','m-pmin','m-pmax','m-avail','m-email','m-tel','m-end','m-notas','m-disc','m-site'].forEach(id=>{document.getElementById(id).value='';});
+  if(document.getElementById('m-platform'))document.getElementById('m-platform').value='';
   renderAll();
 }
 
