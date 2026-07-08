@@ -547,15 +547,15 @@ footer strong{color:var(--muted)}
         <option value="4">Aptos: ≥ 4★</option>
         <option value="all">Aptos: todos vinculados</option>
       </select>
-      <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="openAddModal('platform')">＋ Nova agência</button>
     </div>
-    <p style="font-size:12px;color:var(--muted);margin-top:6px">Cada agência mostra o estágio no funil (editável) e os apartamentos que você marcou 🔥 ou favoritou (♡) dela. Use <b>＋ Nova agência</b> para cadastrar uma imobiliária aqui mesmo, e os botões de cada bloco para vincular ou criar imóveis dela.</p>
+    <p style="font-size:12px;color:var(--muted);margin-top:6px">Cada agência mostra o estágio no funil (editável) e os apartamentos que você marcou 🔥 ou favoritou (♡) dela. Use <b>+ Nova agência</b> (ao lado do contador) para cadastrar uma imobiliária, e os botões de cada bloco para vincular ou criar imóveis dela.</p>
   </div>
-  <div class="count-bar"><span class="count-txt" id="ag-count"></span></div>
+  <div class="count-bar"><span class="count-txt" id="ag-count"></span><button class="btn btn-primary" onclick="openAddModal('platform')">+ Nova agência / imobiliária</button></div>
   <div id="ag-list"></div>
   <div class="empty" id="ag-empty" style="display:none">
     <span class="empty-icon">🏛</span>
     <p>Nenhuma agência no filtro selecionado.</p>
+    <button class="btn btn-primary" onclick="openAddModal('platform')">+ Nova agência / imobiliária</button>
   </div>
 </div>
 
