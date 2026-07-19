@@ -327,6 +327,27 @@ footer{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);font-
 footer strong{color:var(--muted)}
 
 @media(max-width:680px){.stats{grid-template-columns:repeat(3,1fr)}.s5{display:none}}
+
+/* ── VERSUS ─────────────────────────────────────────────────────────────── */
+.vs-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.vs-chip{font-size:12px;padding:5px 11px;border:1px solid var(--border-s);border-radius:20px;background:var(--card);cursor:pointer;white-space:nowrap;transition:all .12s;font-family:inherit;color:var(--text)}
+.vs-chip:hover{background:var(--gray-bg)}
+.vs-chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.vs-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:11px;overflow:hidden;min-width:520px}
+.vs-table th,.vs-table td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top;font-size:13px}
+.vs-table tbody tr:last-child td{border-bottom:none}
+.vs-table thead th{background:var(--gray-bg);font-size:12px}
+.vs-corner{color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-size:11px!important;width:150px}
+.vs-col-nome{font-weight:600;font-size:13px;line-height:1.3;margin-bottom:3px}
+.vs-col-sub{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px}
+.vs-rowlab{font-weight:600;color:var(--text);background:var(--bg);width:150px;font-size:12px;line-height:1.35}
+.vs-rowsub{font-size:11px;color:var(--muted);font-weight:400}
+.vs-tag{display:inline-block;font-size:10px;background:var(--gray-bg);color:var(--gray-t);padding:1px 6px;border-radius:10px;vertical-align:middle}
+.vs-warn{font-size:10px;color:#b8860b;white-space:nowrap}
+.vs-x{background:none;border:none;cursor:pointer;color:var(--faint);font-size:12px;padding:0 2px;margin-left:auto;line-height:1}
+.vs-x:hover{color:#c0392b}
+.vs-padron{font-size:12px;border:1px dashed var(--border-s);background:var(--card);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:inherit;color:var(--text)}
+.vs-padron:hover{background:var(--gray-bg)}
 </style>
 </head>
 <body>
@@ -366,6 +387,7 @@ footer strong{color:var(--muted)}
   <button class="tab" onclick="switchTab('apartments')">🏠 Apartamentos Específicos</button>
   <button class="tab" onclick="switchTab('ranking')">🏆 Ranking</button>
   <button class="tab" onclick="switchTab('agencias')">🏛 Pipeline Agências</button>
+  <button class="tab" onclick="switchTab('versus')">⚔️ Versus</button>
 </div>
 
 <!-- STATS -->
@@ -556,6 +578,22 @@ footer strong{color:var(--muted)}
     <span class="empty-icon">🏛</span>
     <p>Nenhuma agência no filtro selecionado.</p>
     <button class="btn btn-primary" onclick="openAddModal('platform')">+ Nova agência / imobiliária</button>
+  </div>
+</div>
+
+<div id="tab-versus" class="tab-content">
+  <div class="filter-panel">
+    <div class="frow" style="align-items:center">
+      <span class="flabel" style="font-size:14px;font-weight:600;min-width:auto">⚔️ Versus — comparação lado a lado</span>
+      <span style="font-size:12px;color:var(--muted)">Selecione 2 a 4 favoritos. O melhor de cada critério fica em verde.</span>
+      <button class="btn btn-sm" onclick="vsClear()" style="margin-left:auto">Limpar seleção</button>
+    </div>
+  </div>
+  <div id="vs-chips" class="vs-chips"></div>
+  <div id="vs-table-wrap" style="overflow-x:auto"></div>
+  <div class="empty" id="vs-empty" style="display:none">
+    <span class="empty-icon">⚔️</span>
+    <p>Selecione ao menos 2 apartamentos acima para comparar.</p>
   </div>
 </div>
 
@@ -1119,7 +1157,7 @@ function saveApts(){save('hapts',apartments)}
 function saveExtras(){save('hextras3',extras)}
 function saveSL(){save('hsl3',shortlist)}
 
-function getEx(id){const e=extras[id]||{};return{status:e.status||'nao_contatado',userNotes:e.userNotes||'',precoReal:e.precoReal||null,availReal:e.availReal||null,urlReal:e.urlReal||null,triagem:e.triagem||null,score:e.score||0,ultimaAcao:e.ultimaAcao||null,ultimaAcaoNota:e.ultimaAcaoNota||'',ultimaAcaoData:e.ultimaAcaoData||null}}
+function getEx(id){const e=extras[id]||{};return{status:e.status||'nao_contatado',userNotes:e.userNotes||'',precoReal:e.precoReal||null,availReal:e.availReal||null,urlReal:e.urlReal||null,triagem:e.triagem||null,score:e.score||0,ultimaAcao:e.ultimaAcao||null,ultimaAcaoNota:e.ultimaAcaoNota||'',ultimaAcaoData:e.ultimaAcaoData||null,padron:e.padron||null}}
 function setEx(id,k,v){if(!extras[id])extras[id]={status:'nao_contatado',userNotes:'',precoReal:null,availReal:null,triagem:null,score:0,ultimaAcao:null,ultimaAcaoNota:'',ultimaAcaoData:null};extras[id][k]=v;saveExtras();}
 
 function pStr(h){if(h.pmin==null&&h.pmax==null)return null;if(h.pmin&&h.pmax)return`€${h.pmin}–${h.pmax}`;if(h.pmin)return`a partir de €${h.pmin}`;return`até €${h.pmax}`;}
@@ -1127,12 +1165,12 @@ function pStr(h){if(h.pmin==null&&h.pmax==null)return null;if(h.pmin&&h.pmax)ret
 // ── TABS ──────────────────────────────────────────────────────────────────────
 function switchTab(tab){
   currentTab=tab;
-  const idx={platforms:0,apartments:1,ranking:2,agencias:3}[tab]??0;
+  const idx={platforms:0,apartments:1,ranking:2,agencias:3,versus:4}[tab]??0;
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
   document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   // Hide stats + shortlist box on ranking & agencias tabs (own UI)
-  const showSecondary=tab!=='ranking'&&tab!=='agencias';
+  const showSecondary=tab!=='ranking'&&tab!=='agencias'&&tab!=='versus';
   document.querySelector('.stats').style.display=showSecondary?'':'none';
   const slBox=document.querySelector('.sl-box');
   if(slBox)slBox.style.display=showSecondary?'':'none';
@@ -1345,7 +1383,7 @@ function renderApts(){
   grid.innerHTML=filtered.map(h=>buildCard(h)).join('');
 }
 
-function renderAll(){updateStats();updateSLBox();renderPlatforms();renderApts();renderRanking();renderAgencias();}
+function renderAll(){updateStats();updateSLBox();renderPlatforms();renderApts();renderRanking();renderAgencias();renderVersus();}
 
 // ── ÚLTIMA AÇÃO (pipeline) ──────────────────────────────────────────────────
 const ACOES=[['sem_contato','⚪ Sem contato'],['aguardando','📨 Aguardando resposta'],['minha_vez','✍️ Minha vez de responder'],['call_agendada','📞 Call agendada'],['reuniao_feita','✅ Reunião feita'],['visita_marcada','👀 Visita marcada'],['docs_solicitados','📋 Docs solicitados'],['negociando','🤝 Negociando contrato'],['encerrado','❌ Encerrado']];
@@ -1927,6 +1965,185 @@ function importAll(e){
   document.getElementById(id).addEventListener('input',renderApts);
   document.getElementById(id).addEventListener('change',renderApts);
 });
+// ── VERSUS (comparador lado a lado) ───────────────────────────────────────────
+// Commute estimado ATÉ o campus ESADE Sant Cugat, por bairro (a estação FGC do
+// bairro determina ~90% do tempo, então o lookup por bairro é confiável e honesto).
+const VS_COMMUTE = {
+  'Sant Cugat':[5,15,'a pé / bike'],
+  'Sant Cugat del Vallès':[5,15,'a pé / bike'],
+  'Cerdanyola del Vallès':[28,35,'FGC, sem linha direta'],
+  'Sarrià–Sant Gervasi':[12,18,'FGC S5 direto'],
+  'Sarrià':[15,20,'FGC direto'],
+  'Les Corts':[15,25,'Metro → FGC'],
+  'Pedralbes':[18,25,'FGC'],
+  'Gràcia':[20,30,'FGC direto (est. Gràcia)'],
+  'Eixample':[25,35,'FGC (Provença)'],
+  'Sants':[30,35,'Metro → FGC'],
+  'Poble-sec':[32,40,'Metro → FGC'],
+  'Collblanc':[30,38,'Metro → FGC'],
+  'Poblenou':[42,52,'baldeação'],
+  'Sant Martí':[42,52,'baldeação'],
+  'Ciutat Vella':[40,50,'baldeação']
+};
+function vsCommute(h){
+  const c=VS_COMMUTE[h.bairro];
+  if(c) return {min:c[0],max:c[1],nota:c[2],mid:(c[0]+c[1])/2};
+  if(h.local==='sant_cugat') return {min:10,max:20,nota:'próximo ao campus',mid:15};
+  return null;
+}
+const VS_PROG_START = new Date('2026-09-14');
+function vsFmtDate(s){
+  if(!s) return null;
+  const d=new Date(s); if(isNaN(d.getTime())) return null;
+  const M=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return {ts:d.getTime(), label:d.getDate()+' '+M[d.getMonth()]+' '+String(d.getFullYear()).slice(2), late:d>VS_PROG_START};
+}
+function vsPadronLabel(v){
+  if(v==='sim')return '✅ Confirmado';
+  if(v==='duvida')return '⚠️ A confirmar';
+  if(v==='nao')return '❌ Não permite';
+  return '<span style="color:var(--faint)">— clicar p/ marcar</span>';
+}
+function vsPadronCycle(id){
+  const order=['sim','duvida','nao',null];
+  const cur=getEx(id).padron;
+  const i=order.indexOf(cur);
+  setEx(id,'padron',order[(i+1)%order.length]);
+  renderVersus();
+}
+let versusSel=(function(){try{return JSON.parse(localStorage.getItem('hversus'))||[]}catch(e){return[]}})();
+function vsSaveSel(){try{localStorage.setItem('hversus',JSON.stringify(versusSel))}catch(e){}}
+function vsCandidatos(){
+  const ord={quente:0,morno:1,'null':2};
+  return apartments
+    .filter(a=>shortlist.includes(a.id) && getEx(a.id).triagem!=='descartar')
+    .sort((a,b)=>{
+      const ta=ord[getEx(a.id).triagem]??2, tb=ord[getEx(b.id).triagem]??2;
+      if(ta!==tb) return ta-tb;
+      return (getEx(b.id).score||0)-(getEx(a.id).score||0);
+    });
+}
+function vsToggle(id){
+  const i=versusSel.indexOf(id);
+  if(i>=0){versusSel.splice(i,1);}
+  else{
+    if(versusSel.length>=4){alert('Máximo de 4 apartamentos por comparação. Remova um antes de adicionar outro.');return;}
+    versusSel.push(id);
+  }
+  vsSaveSel(); renderVersus();
+}
+function vsClear(){versusSel=[]; vsSaveSel(); renderVersus();}
+function renderVersus(){
+  const chipsEl=document.getElementById('vs-chips');
+  const tableEl=document.getElementById('vs-table-wrap');
+  const emptyEl=document.getElementById('vs-empty');
+  if(!chipsEl||!tableEl||!emptyEl) return;
+  const eh=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const cands=vsCandidatos();
+
+  // remove da seleção ids que deixaram de ser candidatos (ex: marcados como descartar)
+  versusSel=versusSel.filter(id=>cands.some(c=>c.id===id));
+  // primeira visita: auto-seleciona os 3 melhores para a aba não abrir vazia
+  if(versusSel.length===0 && cands.length){
+    versusSel=cands.slice(0,Math.min(3,cands.length)).map(c=>c.id); vsSaveSel();
+  }
+
+  chipsEl.innerHTML = cands.length ? cands.map(c=>{
+    const on=versusSel.includes(c.id);
+    const tri=getEx(c.id).triagem;
+    const ico=tri==='quente'?'🔥 ':tri==='morno'?'🤔 ':'';
+    const nm=c.nome.replace(/^[\s🏠🏢🏘⚔️⭐🎯]+/,'');
+    const short=nm.length>34?nm.slice(0,34)+'…':nm;
+    return `<button class="vs-chip${on?' on':''}" onclick="vsToggle(${c.id})">${on?'✓ ':''}${ico}${eh(short)}</button>`;
+  }).join('') : '<span style="color:var(--faint);font-size:13px">Nenhum favorito para comparar. Favorite (♡) apartamentos nas outras abas.</span>';
+
+  const sel=versusSel.map(id=>apartments.find(a=>a.id===id)).filter(Boolean);
+  if(sel.length<2){
+    tableEl.innerHTML=''; emptyEl.style.display='';
+    emptyEl.querySelector('p').innerHTML = cands.length
+      ? 'Selecione ao menos 2 apartamentos acima para comparar.'
+      : 'Favorite apartamentos (♡) nas outras abas para poder compará-los aqui.';
+    return;
+  }
+  emptyEl.style.display='none';
+
+  // pré-cálculo dos vencedores por critério
+  const precos=sel.map(h=>{const ex=getEx(h.id);return ex.precoReal||h.pmin||null;});
+  const minPreco=Math.min(...precos.filter(v=>v!=null));
+  const commutes=sel.map(vsCommute);
+  const commMids=commutes.filter(c=>c).map(c=>c.mid);
+  const minCommute=commMids.length?Math.min(...commMids):null;
+  const datas=sel.map(h=>{const ex=getEx(h.id);return vsFmtDate(ex.availReal||h.avail);});
+  const dts=datas.filter(d=>d).map(d=>d.ts);
+  const minData=dts.length?Math.min(...dts):null;
+  const scores=sel.map(h=>getEx(h.id).score||0);
+  const maxScore=Math.max(...scores);
+  const multi=sel.length>1;
+  const WIN='background:#e6f4ea;box-shadow:inset 3px 0 0 #2e9e5b';
+
+  const th=sel.map(h=>{
+    const ex=getEx(h.id);
+    const url=ex.urlReal||h.site;
+    const link=url?`<a href="${eh(url)}" target="_blank" class="rk-link">abrir ↗</a>`:'';
+    return `<th class="vs-col-h"><div class="vs-col-nome">${eh(h.nome)}</div><div class="vs-col-sub">${eh(h.source||'')} ${link}<button class="vs-x" onclick="vsToggle(${h.id})" title="Remover da comparação">✕</button></div></th>`;
+  }).join('');
+
+  const row=(label,cells)=>`<tr><td class="vs-rowlab">${label}</td>${cells.join('')}</tr>`;
+  const tipoLb={single:'Quarto individual',studio:'Studio',apart:'Apto inteiro',shared:'Compartilhado',various:'Vários'};
+  const triLb={quente:'🔥 Quente',morno:'🤔 Morno',descartar:'❌ Descartar'};
+  const rows=[];
+
+  rows.push(row('💶 Preço /mês', sel.map((h,i)=>{
+    const ex=getEx(h.id); const p=precos[i]; let txt;
+    if(ex.precoReal) txt=`€${ex.precoReal} <span class="vs-tag">cotado</span>`;
+    else if(h.pmin) txt=h.pmin===h.pmax?`€${h.pmin}`:`€${h.pmin}–${h.pmax}`;
+    else txt='<span style="color:var(--faint)">—</span>';
+    const win=(multi&&p!=null&&p===minPreco)?WIN:'';
+    return `<td style="${win}">${txt}</td>`;
+  })));
+  rows.push(row('📍 Bairro', sel.map(h=>{
+    const loc=h.local==='sant_cugat'?'<span class="vs-tag">Sant Cugat</span>':'<span class="vs-tag">BCN</span>';
+    return `<td>${eh(h.bairro||'—')} ${loc}</td>`;
+  })));
+  rows.push(row('🚆 Commute → ESADE<br><span class="vs-rowsub">est. por bairro</span>', sel.map((h,i)=>{
+    const c=commutes[i];
+    if(!c) return '<td><span style="color:var(--faint)">—</span></td>';
+    const win=(multi&&c.mid===minCommute)?WIN:'';
+    return `<td style="${win}">${c.min}–${c.max} min<br><span class="vs-rowsub">${c.nota}</span></td>`;
+  })));
+  rows.push(row('🏠 Tipo', sel.map(h=>`<td>${tipoLb[h.quarto]||eh(h.quarto||'—')}</td>`)));
+  rows.push(row('📅 Disponível', sel.map((h,i)=>{
+    const d=datas[i], ex=getEx(h.id);
+    if(!d) return '<td><span style="color:var(--faint)">—</span></td>';
+    const win=(multi&&d.ts===minData)?WIN:'';
+    const realTag=ex.availReal?' <span class="vs-tag">conf.</span>':'';
+    const lateTag=d.late?' <span class="vs-warn">⚠️ após início</span>':'';
+    return `<td style="${win}">${d.label}${realTag}${lateTag}</td>`;
+  })));
+  rows.push(row('🎁 Desconto', sel.map(h=>{
+    if(h.disc&&h.discInfo) return `<td style="${WIN}">✓ ${eh(h.discInfo)}</td>`;
+    if(h.disc) return `<td style="${WIN}">✓ sim</td>`;
+    return '<td><span style="color:var(--faint)">—</span></td>';
+  })));
+  rows.push(row('🔑 Padrón', sel.map(h=>{
+    const v=getEx(h.id).padron;
+    const win=(v==='sim')?WIN:'';
+    return `<td style="${win}"><button class="vs-padron" onclick="vsPadronCycle(${h.id})">${vsPadronLabel(v)}</button></td>`;
+  })));
+  rows.push(row('⭐ Seu score', sel.map(h=>{
+    const s=getEx(h.id).score||0;
+    const win=(multi&&maxScore>0&&s===maxScore)?WIN:'';
+    const stars='★'.repeat(s)+'<span style="color:#d4d0c4">'+'★'.repeat(5-s)+'</span>';
+    return `<td style="${win}"><span style="color:#f5b800;letter-spacing:1px">${stars}</span></td>`;
+  })));
+  rows.push(row('🎯 Triagem', sel.map(h=>{
+    const t=getEx(h.id).triagem;
+    return `<td>${t?triLb[t]:'<span style="color:var(--faint)">não triado</span>'}</td>`;
+  })));
+
+  tableEl.innerHTML=`<table class="vs-table"><thead><tr><th class="vs-corner">Critério</th>${th}</tr></thead><tbody>${rows.join('')}</tbody></table>`;
+}
+
 ['rkfilter','rksort','rkq'].forEach(id=>{
   const el=document.getElementById(id);
   if(!el)return;
