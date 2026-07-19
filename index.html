@@ -329,7 +329,11 @@ footer strong{color:var(--muted)}
 @media(max-width:680px){.stats{grid-template-columns:repeat(3,1fr)}.s5{display:none}}
 
 /* ── VERSUS ─────────────────────────────────────────────────────────────── */
-.vs-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.vs-chips{margin-bottom:14px}
+.vs-group{margin-bottom:11px}
+.vs-group:last-child{margin-bottom:0}
+.vs-group-h{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin:0 0 5px}
+.vs-group-chips{display:flex;flex-wrap:wrap;gap:6px}
 .vs-chip{font-size:12px;padding:5px 11px;border:1px solid var(--border-s);border-radius:20px;background:var(--card);cursor:pointer;white-space:nowrap;transition:all .12s;font-family:inherit;color:var(--text)}
 .vs-chip:hover{background:var(--gray-bg)}
 .vs-chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -585,8 +589,27 @@ footer strong{color:var(--muted)}
   <div class="filter-panel">
     <div class="frow" style="align-items:center">
       <span class="flabel" style="font-size:14px;font-weight:600;min-width:auto">⚔️ Versus — comparação lado a lado</span>
-      <span style="font-size:12px;color:var(--muted)">Selecione 2 a 4 favoritos. O melhor de cada critério fica em verde.</span>
+      <span style="font-size:12px;color:var(--muted)">Selecione 2 a 6 favoritos. O melhor de cada critério fica em verde.</span>
       <button class="btn btn-sm" onclick="vsClear()" style="margin-left:auto">Limpar seleção</button>
+    </div>
+    <div class="frow" style="align-items:center">
+      <span class="flabel">Filtrar:</span>
+      <select id="vs-f-tri" style="font-size:12px;padding:4px 8px" onchange="vsSetFiltro('triagem',this.value)">
+        <option value="">Toda triagem</option>
+        <option value="quente">🔥 Só quentes</option>
+        <option value="morno">🤔 Só mornos</option>
+        <option value="quente_morno">🔥 + 🤔</option>
+      </select>
+      <select id="vs-f-score" style="font-size:12px;padding:4px 8px" onchange="vsSetFiltro('score',this.value)">
+        <option value="0">Todo score</option>
+        <option value="5">★★★★★ (5)</option>
+        <option value="4">4★ ou mais</option>
+        <option value="3">3★ ou mais</option>
+      </select>
+      <select id="vs-f-source" style="font-size:12px;padding:4px 8px" onchange="vsSetFiltro('source',this.value)">
+        <option value="">Todas as fontes</option>
+      </select>
+      <button class="btn btn-sm" onclick="vsResetFiltros()">Limpar filtros</button>
     </div>
   </div>
   <div id="vs-chips" class="vs-chips"></div>
@@ -2013,6 +2036,19 @@ function vsPadronCycle(id){
 }
 let versusSel=(function(){try{return JSON.parse(localStorage.getItem('hversus'))||[]}catch(e){return[]}})();
 function vsSaveSel(){try{localStorage.setItem('hversus',JSON.stringify(versusSel))}catch(e){}}
+let vsFiltro=(function(){try{return Object.assign({triagem:'',score:0,source:''},JSON.parse(localStorage.getItem('hvfilter'))||{})}catch(e){return{triagem:'',score:0,source:''}}})();
+function vsSaveFiltro(){try{localStorage.setItem('hvfilter',JSON.stringify(vsFiltro))}catch(e){}}
+function vsSetFiltro(k,v){vsFiltro[k]=(k==='score')?(parseInt(v)||0):v; vsSaveFiltro(); renderVersus();}
+function vsResetFiltros(){vsFiltro={triagem:'',score:0,source:''}; vsSaveFiltro(); renderVersus();}
+function vsPassaFiltro(a){
+  const ex=getEx(a.id), t=vsFiltro.triagem;
+  if(t==='quente'&&ex.triagem!=='quente')return false;
+  if(t==='morno'&&ex.triagem!=='morno')return false;
+  if(t==='quente_morno'&&!(ex.triagem==='quente'||ex.triagem==='morno'))return false;
+  if(vsFiltro.score&&(ex.score||0)<vsFiltro.score)return false;
+  if(vsFiltro.source&&(a.source||'—')!==vsFiltro.source)return false;
+  return true;
+}
 function vsCandidatos(){
   const ord={quente:0,morno:1,'null':2};
   return apartments
@@ -2027,7 +2063,7 @@ function vsToggle(id){
   const i=versusSel.indexOf(id);
   if(i>=0){versusSel.splice(i,1);}
   else{
-    if(versusSel.length>=4){alert('Máximo de 4 apartamentos por comparação. Remova um antes de adicionar outro.');return;}
+    if(versusSel.length>=6){alert('Máximo de 6 apartamentos por comparação. Remova um antes de adicionar outro.');return;}
     versusSel.push(id);
   }
   vsSaveSel(); renderVersus();
@@ -2048,14 +2084,36 @@ function renderVersus(){
     versusSel=cands.slice(0,Math.min(3,cands.length)).map(c=>c.id); vsSaveSel();
   }
 
-  chipsEl.innerHTML = cands.length ? cands.map(c=>{
+  // popula os selects de filtro (sources dinâmicos) e reflete o estado salvo
+  const triSel=document.getElementById('vs-f-tri'); if(triSel)triSel.value=vsFiltro.triagem;
+  const scSel=document.getElementById('vs-f-score'); if(scSel)scSel.value=String(vsFiltro.score||0);
+  const srcSel=document.getElementById('vs-f-source');
+  if(srcSel){
+    const sources=[...new Set(cands.map(c=>c.source||'—'))].sort();
+    srcSel.innerHTML='<option value="">Todas as fontes</option>'+sources.map(s=>`<option value="${eh(s)}"${s===vsFiltro.source?' selected':''}>${eh(s)}</option>`).join('');
+  }
+
+  const filtrados=cands.filter(vsPassaFiltro);
+  const chipHtml=c=>{
     const on=versusSel.includes(c.id);
-    const tri=getEx(c.id).triagem;
-    const ico=tri==='quente'?'🔥 ':tri==='morno'?'🤔 ':'';
-    const nm=c.nome.replace(/^[\s🏠🏢🏘⚔️⭐🎯]+/,'');
-    const short=nm.length>34?nm.slice(0,34)+'…':nm;
-    return `<button class="vs-chip${on?' on':''}" onclick="vsToggle(${c.id})">${on?'✓ ':''}${ico}${eh(short)}</button>`;
-  }).join('') : '<span style="color:var(--faint);font-size:13px">Nenhum favorito para comparar. Favorite (♡) apartamentos nas outras abas.</span>';
+    const ex=getEx(c.id);
+    const ico=ex.triagem==='quente'?'🔥 ':ex.triagem==='morno'?'🤔 ':'';
+    const star=ex.score?' '+ex.score+'★':'';
+    const nm=c.nome.replace(/^[\s🏠🏢🏘⚔️⭐🎯🎯]+/,'');
+    const short=nm.length>30?nm.slice(0,30)+'…':nm;
+    return `<button class="vs-chip${on?' on':''}" onclick="vsToggle(${c.id})">${on?'✓ ':''}${ico}${eh(short)}${star}</button>`;
+  };
+  if(!cands.length){
+    chipsEl.innerHTML='<span style="color:var(--faint);font-size:13px">Nenhum favorito para comparar. Favorite (♡) apartamentos nas outras abas.</span>';
+  } else if(!filtrados.length){
+    chipsEl.innerHTML='<span style="color:var(--faint);font-size:13px">Nenhum candidato bate os filtros. <a href="#" onclick="vsResetFiltros();return false">Limpar filtros</a>.</span>';
+  } else {
+    const groups={};
+    filtrados.forEach(c=>{const s=c.source||'—';(groups[s]=groups[s]||[]).push(c);});
+    chipsEl.innerHTML=Object.keys(groups).sort().map(src=>
+      `<div class="vs-group"><div class="vs-group-h">${eh(src)} <span style="color:var(--faint);font-weight:400">(${groups[src].length})</span></div><div class="vs-group-chips">${groups[src].map(chipHtml).join('')}</div></div>`
+    ).join('');
+  }
 
   const sel=versusSel.map(id=>apartments.find(a=>a.id===id)).filter(Boolean);
   if(sel.length<2){
