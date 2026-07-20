@@ -361,6 +361,9 @@ footer strong{color:var(--muted)}
 .vs-x:hover{color:#c0392b}
 .vs-padron{font-size:12px;border:1px dashed var(--border-s);background:var(--card);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:inherit;color:var(--text)}
 .vs-padron:hover{background:var(--gray-bg)}
+.vs-edit{font-size:11px;border:1px dashed var(--border-s);background:var(--card);border-radius:6px;padding:2px 7px;cursor:pointer;font-family:inherit;color:var(--accent)}
+.vs-edit:hover{background:var(--gray-bg)}
+.vs-cellact{margin-top:5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -1187,7 +1190,7 @@ function saveApts(){save('hapts',apartments)}
 function saveExtras(){save('hextras3',extras)}
 function saveSL(){save('hsl3',shortlist)}
 
-function getEx(id){const e=extras[id]||{};return{status:e.status||'nao_contatado',userNotes:e.userNotes||'',precoReal:e.precoReal||null,availReal:e.availReal||null,urlReal:e.urlReal||null,triagem:e.triagem||null,score:e.score||0,ultimaAcao:e.ultimaAcao||null,ultimaAcaoNota:e.ultimaAcaoNota||'',ultimaAcaoData:e.ultimaAcaoData||null,padron:e.padron||null}}
+function getEx(id){const e=extras[id]||{};return{status:e.status||'nao_contatado',userNotes:e.userNotes||'',precoReal:e.precoReal||null,availReal:e.availReal||null,urlReal:e.urlReal||null,triagem:e.triagem||null,score:e.score||0,ultimaAcao:e.ultimaAcao||null,ultimaAcaoNota:e.ultimaAcaoNota||'',ultimaAcaoData:e.ultimaAcaoData||null,padron:e.padron||null,habs:e.habs!=null?e.habs:null,m2:e.m2!=null?e.m2:null,commuteMin:e.commuteMin!=null?e.commuteMin:null}}
 function setEx(id,k,v){if(!extras[id])extras[id]={status:'nao_contatado',userNotes:'',precoReal:null,availReal:null,triagem:null,score:0,ultimaAcao:null,ultimaAcaoNota:'',ultimaAcaoData:null};extras[id][k]=v;saveExtras();}
 
 function pStr(h){if(h.pmin==null&&h.pmax==null)return null;if(h.pmin&&h.pmax)return`€${h.pmin}–${h.pmax}`;if(h.pmin)return`a partir de €${h.pmin}`;return`até €${h.pmax}`;}
@@ -2034,6 +2037,20 @@ function vsPadronLabel(v){
   if(v==='nao')return '❌ Não permite';
   return '<span style="color:var(--faint)">— clicar p/ marcar</span>';
 }
+const VS_ESADE='ESADE Business School, Av. de Torre Blanca 59, 08172 Sant Cugat del Vallès';
+function vsMapsUrl(h){
+  const origem=(h.end&&h.end.trim())?h.end:(h.bairro?h.bairro+', Barcelona':h.nome);
+  return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(origem)+'&destination='+encodeURIComponent(VS_ESADE);
+}
+function vsEditNum(id,campo,label){
+  const cur=getEx(id)[campo];
+  const v=prompt(label, cur!=null?cur:'');
+  if(v===null)return;
+  const t=String(v).trim().replace(',','.');
+  if(t===''){setEx(id,campo,null);}
+  else{const n=parseFloat(t); if(isNaN(n)||n<0){alert('Valor inválido.');return;} setEx(id,campo,n);}
+  renderVersus();
+}
 function vsPadronCycle(id){
   const order=['sim','duvida','nao',null];
   const cur=getEx(id).padron;
@@ -2162,9 +2179,13 @@ function renderVersus(){
   // pré-cálculo dos vencedores por critério
   const precos=sel.map(h=>{const ex=getEx(h.id);return ex.precoReal||h.pmin||null;});
   const minPreco=Math.min(...precos.filter(v=>v!=null));
+  const m2s=sel.map(h=>getEx(h.id).m2);
+  const maxM2=(()=>{const v=m2s.filter(x=>x!=null);return v.length?Math.max(...v):null;})();
+  const precoM2=sel.map((h,i)=>{const m=getEx(h.id).m2,p=precos[i];return (m&&p)?Math.round(p/m):null;});
+  const minPM2=(()=>{const v=precoM2.filter(x=>x!=null);return v.length?Math.min(...v):null;})();
   const commutes=sel.map(vsCommute);
-  const commMids=commutes.filter(c=>c).map(c=>c.mid);
-  const minCommute=commMids.length?Math.min(...commMids):null;
+  const commVals=sel.map((h,i)=>{const r=getEx(h.id).commuteMin;if(r!=null)return r;const c=commutes[i];return c?c.mid:null;});
+  const minCommute=(()=>{const v=commVals.filter(x=>x!=null);return v.length?Math.min(...v):null;})();
   const datas=sel.map(h=>{const ex=getEx(h.id);return vsFmtDate(ex.availReal||h.avail);});
   const dts=datas.filter(d=>d).map(d=>d.ts);
   const minData=dts.length?Math.min(...dts):null;
@@ -2193,17 +2214,39 @@ function renderVersus(){
     const win=(multi&&p!=null&&p===minPreco)?WIN:'';
     return `<td style="${win}">${txt}</td>`;
   })));
+  rows.push(row('💶 €/m²<br><span class="vs-rowsub">preço ÷ m²</span>', sel.map((h,i)=>{
+    const v=precoM2[i];
+    if(v==null) return '<td><span style="color:var(--faint)">—</span></td>';
+    const win=(multi&&v===minPM2)?WIN:'';
+    return `<td style="${win}">€${v}/m²</td>`;
+  })));
   rows.push(row('📍 Bairro', sel.map(h=>{
     const loc=h.local==='sant_cugat'?'<span class="vs-tag">Sant Cugat</span>':'<span class="vs-tag">BCN</span>';
     return `<td>${eh(h.bairro||'—')} ${loc}</td>`;
   })));
-  rows.push(row('🚆 Commute → ESADE<br><span class="vs-rowsub">est. por bairro</span>', sel.map((h,i)=>{
-    const c=commutes[i];
-    if(!c) return '<td><span style="color:var(--faint)">—</span></td>';
-    const win=(multi&&c.mid===minCommute)?WIN:'';
-    return `<td style="${win}">${c.min}–${c.max} min<br><span class="vs-rowsub">${c.nota}</span></td>`;
+  rows.push(row('🚆 Commute → ESADE<br><span class="vs-rowsub">real ou est. por bairro</span>', sel.map((h,i)=>{
+    const ex=getEx(h.id); const real=ex.commuteMin; const c=commutes[i]; const val=commVals[i];
+    let txt;
+    if(real!=null) txt=`${real} min <span class="vs-tag">real</span>`;
+    else if(c) txt=`${c.min}–${c.max} min<br><span class="vs-rowsub">est. ${c.nota}</span>`;
+    else txt='<span style="color:var(--faint)">—</span>';
+    const win=(multi&&val!=null&&val===minCommute)?WIN:'';
+    const maps=`<a href="${vsMapsUrl(h)}" target="_blank" rel="noopener" class="vs-opt-link" onclick="event.stopPropagation()">Maps ↗</a>`;
+    const edit=`<button class="vs-edit" onclick="vsEditNum(${h.id},'commuteMin','Commute real até ESADE (min):')">${real!=null?'editar':'+ real'}</button>`;
+    return `<td style="${win}">${txt}<div class="vs-cellact">${maps}${edit}</div></td>`;
   })));
   rows.push(row('🏠 Tipo', sel.map(h=>`<td>${tipoLb[h.quarto]||eh(h.quarto||'—')}</td>`)));
+  rows.push(row('🛏 Habitações', sel.map(h=>{
+    const v=getEx(h.id).habs;
+    const disp=v!=null?v:'<span style="color:var(--faint)">+ add</span>';
+    return `<td><button class="vs-edit" onclick="vsEditNum(${h.id},'habs','Nº de habitações (quartos):')">${disp}</button></td>`;
+  })));
+  rows.push(row('📐 m²', sel.map(h=>{
+    const v=getEx(h.id).m2;
+    const win=(multi&&v!=null&&v===maxM2)?WIN:'';
+    const disp=v!=null?v+' m²':'<span style="color:var(--faint)">+ add</span>';
+    return `<td style="${win}"><button class="vs-edit" onclick="vsEditNum(${h.id},'m2','Metragem (m²):')">${disp}</button></td>`;
+  })));
   rows.push(row('📅 Disponível', sel.map((h,i)=>{
     const d=datas[i], ex=getEx(h.id);
     if(!d) return '<td><span style="color:var(--faint)">—</span></td>';
