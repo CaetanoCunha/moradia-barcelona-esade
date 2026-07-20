@@ -2206,13 +2206,14 @@ function renderVersus(){
   const triLb={quente:'🔥 Quente',morno:'🤔 Morno',descartar:'❌ Descartar'};
   const rows=[];
 
-  rows.push(row('💶 Preço /mês', sel.map((h,i)=>{
+  rows.push(row('💶 Preço /mês<br><span class="vs-rowsub">all-in real ou anúncio</span>', sel.map((h,i)=>{
     const ex=getEx(h.id); const p=precos[i]; let txt;
-    if(ex.precoReal) txt=`€${ex.precoReal} <span class="vs-tag">cotado</span>`;
-    else if(h.pmin) txt=h.pmin===h.pmax?`€${h.pmin}`:`€${h.pmin}–${h.pmax}`;
+    if(ex.precoReal!=null) txt=`€${ex.precoReal} <span class="vs-tag">all-in</span>`;
+    else if(h.pmin) txt=(h.pmin===h.pmax?`€${h.pmin}`:`€${h.pmin}–${h.pmax}`)+' <span class="vs-rowsub">anúncio</span>';
     else txt='<span style="color:var(--faint)">—</span>';
     const win=(multi&&p!=null&&p===minPreco)?WIN:'';
-    return `<td style="${win}">${txt}</td>`;
+    const edit=`<button class="vs-edit" onclick="vsEditNum(${h.id},'precoReal','Preço real all-in por mês (base + condomínio + consumos + taxas):')">${ex.precoReal!=null?'editar':'+ all-in'}</button>`;
+    return `<td style="${win}">${txt}<div class="vs-cellact">${edit}</div></td>`;
   })));
   rows.push(row('💶 €/m²<br><span class="vs-rowsub">preço ÷ m²</span>', sel.map((h,i)=>{
     const v=precoM2[i];
