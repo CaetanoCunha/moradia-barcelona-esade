@@ -341,7 +341,11 @@ footer strong{color:var(--muted)}
 .vs-opt:hover{background:var(--bg)}
 .vs-opt.on{background:#eef5ee}
 .vs-opt input{cursor:pointer;width:15px;height:15px;flex-shrink:0;accent-color:var(--accent)}
-.vs-opt-nm{line-height:1.3}
+.vs-opt-nm{line-height:1.3;flex:1;min-width:0}
+.vs-opt-meta{margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0;padding-left:8px}
+.vs-opt-disp{font-size:11px;color:var(--muted);white-space:nowrap}
+.vs-opt-link{font-size:11px;color:var(--accent);text-decoration:none;white-space:nowrap}
+.vs-opt-link:hover{text-decoration:underline}
 .vs-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:11px;overflow:hidden;min-width:520px}
 .vs-table th,.vs-table td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top;font-size:13px}
 .vs-table tbody tr:last-child td{border-bottom:none}
@@ -2124,7 +2128,11 @@ function renderVersus(){
     const ico=ex.triagem==='quente'?'🔥 ':ex.triagem==='morno'?'🤔 ':'';
     const star=ex.score?' <span style="color:#f5b800">'+ex.score+'★</span>':'';
     const nm=eh(c.nome.replace(/^[\s🏠🏢🏘⚔️⭐🎯]+/,''));
-    return `<label class="vs-opt${on?' on':''}"><input type="checkbox" ${on?'checked':''} onchange="vsToggle(${c.id})"><span class="vs-opt-nm">${ico}${nm}${star}</span></label>`;
+    const d=vsFmtDate(ex.availReal||c.avail);
+    const disp=d?`<span class="vs-opt-disp">📅 ${d.label}${d.late?' <span class="vs-warn">⚠️</span>':''}</span>`:'<span class="vs-opt-disp" style="color:var(--faint)">📅 —</span>';
+    const url=ex.urlReal||c.site;
+    const link=url?`<a href="${eh(url)}" target="_blank" rel="noopener" class="vs-opt-link" onclick="event.stopPropagation()">abrir ↗</a>`:'';
+    return `<label class="vs-opt${on?' on':''}"><input type="checkbox" ${on?'checked':''} onchange="vsToggle(${c.id})"><span class="vs-opt-nm">${ico}${nm}${star}</span><span class="vs-opt-meta">${disp}${link}</span></label>`;
   };
   if(!cands.length){
     chipsEl.innerHTML='<span style="color:var(--faint);font-size:13px">Nenhum favorito para comparar. Favorite (♡) apartamentos nas outras abas.</span>';
