@@ -2128,11 +2128,10 @@ function renderVersus(){
     const ico=ex.triagem==='quente'?'🔥 ':ex.triagem==='morno'?'🤔 ':'';
     const star=ex.score?' <span style="color:#f5b800">'+ex.score+'★</span>':'';
     const nm=eh(c.nome.replace(/^[\s🏠🏢🏘⚔️⭐🎯]+/,''));
-    const d=vsFmtDate(ex.availReal||c.avail);
-    const disp=d?`<span class="vs-opt-disp">📅 ${d.label}${d.late?' <span class="vs-warn">⚠️</span>':''}</span>`:'<span class="vs-opt-disp" style="color:var(--faint)">📅 —</span>';
+    const statusBtn=`<button class="status-btn ${ST_CL[ex.status]}" onclick="event.stopPropagation();cycleStatus(${c.id})" title="Clique para alterar o status">${ST_LB[ex.status]}</button>`;
     const url=ex.urlReal||c.site;
     const link=url?`<a href="${eh(url)}" target="_blank" rel="noopener" class="vs-opt-link" onclick="event.stopPropagation()">abrir ↗</a>`:'';
-    return `<label class="vs-opt${on?' on':''}"><input type="checkbox" ${on?'checked':''} onchange="vsToggle(${c.id})"><span class="vs-opt-nm">${ico}${nm}${star}</span><span class="vs-opt-meta">${disp}${link}</span></label>`;
+    return `<label class="vs-opt${on?' on':''}"><input type="checkbox" ${on?'checked':''} onchange="vsToggle(${c.id})"><span class="vs-opt-nm">${ico}${nm}${star}</span><span class="vs-opt-meta">${statusBtn}${link}</span></label>`;
   };
   if(!cands.length){
     chipsEl.innerHTML='<span style="color:var(--faint);font-size:13px">Nenhum favorito para comparar. Favorite (♡) apartamentos nas outras abas.</span>';
