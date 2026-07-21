@@ -248,6 +248,9 @@ textarea{resize:vertical;min-height:60px}
 .b-single{background:#eaf5ff;color:#1a5a8a}
 .b-studio{background:#f0fff4;color:#1a6b3a}
 .b-apart{background:#fef0ff;color:#6a1a8a}
+.b-padx{background:#fdeaea;color:#b3261e;font-weight:600}
+.b-padd{background:#fff6e0;color:#8a5a00;font-weight:600}
+.b-padok{background:#e7f6ec;color:#1a6b3a;font-weight:600}
 .b-var{background:var(--gray-bg);color:var(--gray-t)}
 .b-loc{background:var(--gray-bg);color:var(--gray-t);font-weight:400}
 .b-ext{background:#f5f4f0;color:var(--faint);font-weight:400}
@@ -1229,6 +1232,18 @@ let shortlist = loadStorage('hsl3', []);
   save('hsl3',shortlist);saveExtras();
   localStorage.setItem(FLAG,'1');
 })();
+// ── Migration v21 (21/07/2026): marca padrón='nao' nos leads reprovados por texto do anúncio (ócio/exclusão explícita) → selo ⛔ Padrón ──
+(function migrateExtrasV21(){
+  const FLAG='hsl3_mig_v21';
+  if(localStorage.getItem(FLAG))return;
+  // 307 Neptú, 309 Saragossa, 311 Padilla, 312 Poble Sec: anúncios negam residência habitual/empadronamiento
+  [307,309,311,312].forEach(id=>{
+    if(!extras[id])extras[id]={status:'nao_contatado',userNotes:'',precoReal:null,availReal:null,triagem:'quente',score:5,ultimaAcao:null,ultimaAcaoNota:'',ultimaAcaoData:null};
+    if(!extras[id].padron)extras[id].padron='nao';
+  });
+  saveExtras();
+  localStorage.setItem(FLAG,'1');
+})();
 let previews = [];
 let addTarget = 'platform';
 let nextId = Math.max(100, ...platforms.map(d=>d.id), ...apartments.map(d=>d.id)) + 1;
@@ -1347,6 +1362,13 @@ function isSpecificListing(url){
   return !searchPatterns.some(p=>url.includes(p));
 }
 
+function padronBadge(id){
+  const p=getEx(id).padron;
+  if(p==='nao')return '<span class="badge b-padx" title="Padrón REPROVADO — o anúncio nega residência habitual / empadronamiento (temporada de ócio ou exclusão explícita)">⛔ Padrón</span>';
+  if(p==='duvida')return '<span class="badge b-padd" title="Padrón a confirmar por escrito">⚠️ Padrón?</span>';
+  if(p==='sim')return '<span class="badge b-padok" title="Padrón confirmado por escrito">✓ Padrón</span>';
+  return '';
+}
 function buildCard(h){
   const ex=getEx(h.id);
   const fav=shortlist.includes(h.id);
@@ -1384,6 +1406,7 @@ function buildCard(h){
         <span class="badge ${TIPO_CL[h.tipo]||'b-apt'}">${TIPO_LB[h.tipo]||h.tipo}</span>
         <span class="badge ${QUARTO_CL[h.quarto]||'b-var'}">${QUARTO_LB[h.quarto]||h.quarto}</span>
         ${viaBadge}
+        ${padronBadge(h.id)}
         ${!h.hb?'<span class="badge b-ext">externo</span>':''}
       </div>
       <div class="card-name">${h.nome}</div>
@@ -1550,7 +1573,7 @@ function renderRanking(){
       <td class="rk-rank ${rankCls}">${i+1}</td>
       <td class="rk-tri">${triBtns}</td>
       <td class="rk-score-cell">${starsBtns}</td>
-      <td><div class="rk-nome">${tipoBadge} ${h.nome}</div><div class="rk-bairro">${h.bairro?'📍 '+h.bairro:''}${h.source?' · <span class="rk-source">'+h.source+'</span>':''}</div></td>
+      <td><div class="rk-nome">${tipoBadge} ${h.nome} ${padronBadge(h.id)}</div><div class="rk-bairro">${h.bairro?'📍 '+h.bairro:''}${h.source?' · <span class="rk-source">'+h.source+'</span>':''}</div></td>
       <td class="rk-preco" data-id="${h.id}" onclick="rkPriceEdit(this,${h.id})" title="Clique para editar preço cotado">${preco}${precoExtra}</td>
       <td class="rk-status">${statusBtn}</td>
       <td class="rk-acao">${acaoCell}</td>
