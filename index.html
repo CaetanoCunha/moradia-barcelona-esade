@@ -628,6 +628,11 @@ footer strong{color:var(--muted)}
         <option value="disponivel">Disponível ✓</option>
         <option value="indisponivel">Indisponível</option>
       </select>
+      <select id="vs-f-plano" style="font-size:12px;padding:4px 8px" onchange="vsSetFiltro('plano',this.value)">
+        <option value="">Todo plano</option>
+        <option value="A">🔑 Plano A (individual)</option>
+        <option value="B">👥 Plano B (compartilhar)</option>
+      </select>
       <button class="btn btn-sm" onclick="vsResetFiltros();vsSetBusca('')">Limpar</button>
       <span id="vs-count" style="margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap"></span>
     </div>
@@ -2187,10 +2192,16 @@ function vsPadronCycle(id){
 }
 let versusSel=(function(){try{return JSON.parse(localStorage.getItem('hversus'))||[]}catch(e){return[]}})();
 function vsSaveSel(){try{localStorage.setItem('hversus',JSON.stringify(versusSel))}catch(e){}}
-let vsFiltro=(function(){try{return Object.assign({triagem:'',score:0,source:'',status:''},JSON.parse(localStorage.getItem('hvfilter'))||{})}catch(e){return{triagem:'',score:0,source:'',status:''}}})();
+let vsFiltro=(function(){try{return Object.assign({triagem:'',score:0,source:'',status:'',plano:''},JSON.parse(localStorage.getItem('hvfilter'))||{})}catch(e){return{triagem:'',score:0,source:'',status:'',plano:''}}})();
 function vsSaveFiltro(){try{localStorage.setItem('hvfilter',JSON.stringify(vsFiltro))}catch(e){}}
 function vsSetFiltro(k,v){vsFiltro[k]=(k==='score')?(parseInt(v)||0):v; vsSaveFiltro(); renderVersus();}
-function vsResetFiltros(){vsFiltro={triagem:'',score:0,source:'',status:''}; vsSaveFiltro(); renderVersus();}
+function vsResetFiltros(){vsFiltro={triagem:'',score:0,source:'',status:'',plano:''}; vsSaveFiltro(); renderVersus();}
+function vsGetPlano(a){
+  const s=(a.nome||'')+' '+(a.notas||'');
+  if(/【PLANO A|🔑 A /.test(s))return'A';
+  if(/【PLANO B|👥 B |TRILHA B/.test(s))return'B';
+  return null;
+}
 function vsPassaFiltro(a){
   const ex=getEx(a.id), t=vsFiltro.triagem;
   if(t==='quente'&&ex.triagem!=='quente')return false;
@@ -2198,6 +2209,7 @@ function vsPassaFiltro(a){
   if(t==='quente_morno'&&!(ex.triagem==='quente'||ex.triagem==='morno'))return false;
   if(vsFiltro.score&&(ex.score||0)<vsFiltro.score)return false;
   if(vsFiltro.status&&ex.status!==vsFiltro.status)return false;
+  if(vsFiltro.plano&&vsGetPlano(a)!==vsFiltro.plano)return false;
   if(!vsMatchBusca(a))return false;
   return true;
 }
@@ -2264,6 +2276,7 @@ function renderVersus(){
   const triSel=document.getElementById('vs-f-tri'); if(triSel)triSel.value=vsFiltro.triagem;
   const scSel=document.getElementById('vs-f-score'); if(scSel)scSel.value=String(vsFiltro.score||0);
   const stSel=document.getElementById('vs-f-status'); if(stSel)stSel.value=vsFiltro.status||'';
+  const plSel=document.getElementById('vs-f-plano'); if(plSel)plSel.value=vsFiltro.plano||'';
   const buscaEl=document.getElementById('vs-busca'); if(buscaEl&&buscaEl.value!==vsBusca)buscaEl.value=vsBusca;
   const countEl=document.getElementById('vs-count'); if(countEl)countEl.textContent=versusSel.length+'/6 selecionados';
 
