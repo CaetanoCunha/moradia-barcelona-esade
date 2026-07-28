@@ -927,6 +927,10 @@ const BASE_APARTMENTS_FALLBACK = [
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let platforms = loadStorage('hplat', BASE_PLATFORMS);
 let apartments = loadStorage('hapts', BASE_APARTMENTS_FALLBACK);
+// Defesa: remove elementos nulos/sem id que possam ter sido persistidos no localStorage
+// (ex.: vírgula dupla no array serializada como null). Evita crash em autoMigrateApts/render.
+platforms = (platforms||[]).filter(p => p && p.id != null);
+apartments = (apartments||[]).filter(a => a && a.id != null);
 let _remoteLoaded = false;
 
 // Auto-migração: se os dados locais não têm platformId, são antigos — limpa e usa fallback
