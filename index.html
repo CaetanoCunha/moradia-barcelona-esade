@@ -926,6 +926,7 @@ const BASE_APARTMENTS_FALLBACK = [
   ,{id:321,platformId:54,nome:"👥 B · ⛔ Gran Via/Pl. Espanya — AT (ócio)",tipo:"apartamento",bairro:"Sants",local:"barcelona",quarto:"apart",pmin:1900,pmax:1900,disc:false,discInfo:null,avail:"2026-08-05",hb:false,notas:"【PLANO B · ⛔ INVIÁVEL PADRÓN】 96m², 3 quartos/2 banheiros, Gran Via junto Pl. Espanya (perto Bellvitge/aeroporto — fronteira L'Hospitalet). €1.900/mês. TEMPORADA USO EXCLUSIVO VACACIONES/OCIO → não empadronável. Urbanização c/ piscina/ginásio. DESCARTADO por padrón.",email:null,tel:null,end:"Gran Via — Plaça Espanya, Barcelona",site:"https://www.atbarcelona.es/fichadetalle.aspx?id=14610",source:"AT Barcelona"}
   ,{id:322,platformId:55,nome:"👥 B · ⛔ Sagrada Família Industria — Atemporal (ócio)",tipo:"apartamento",bairro:"Eixample",local:"barcelona",quarto:"apart",pmin:1890,pmax:1890,disc:false,discInfo:null,avail:null,hb:false,notas:"【PLANO B · ⛔ INVIÁVEL PADRÓN】 58m², 2 quartos/1 banheiro, calle Industria (perto Sant Pau). €1.890/mês. Fines de ocio/vacaciones → uso ócio, não empadronável. Gran tenedor: sí. DESCARTADO por padrón.",email:null,tel:null,end:"Calle Industria — Eixample, Barcelona",site:"https://www.atemporalbarcelona.es/barcelona/eixample/piso-de-alquiler-temporal-de-2-habitaciones-en-el-barrio-sagrada-familia",source:"Atemporal Barcelona"}
   ,{id:323,platformId:55,nome:"👥 B · ⛔ Ático Eixample Dreta — Atemporal (ócio)",tipo:"apartamento",bairro:"Eixample",local:"barcelona",quarto:"apart",pmin:1895,pmax:1895,disc:false,discInfo:null,avail:"2026-09-04",hb:false,notas:"【PLANO B · ⛔ INVIÁVEL PADRÓN】 54m² + terraço 60m², 3 quartos/1 banheiro, Eixample Dreta (perto Pl. Catalunya). €1.895/mês. Fines de ocio/vacaciones → uso ócio, não empadronável. Gran tenedor: no. DESCARTADO por padrón.",email:null,tel:null,end:"Eixample Dreta, Barcelona",site:"https://www.atemporalbarcelona.es/barcelona/eixample/atico-de-alquiler-temporal-de-3-habitaciones-y-amplia-terraza-en-eixample-dreta",source:"Atemporal Barcelona"}
+  ,{id:324,platformId:55,nome:"🔑 A · Ático Gràcia terraço — Atemporal (AT2311015)",tipo:"apartamento",bairro:"Gràcia",local:"barcelona",quarto:"apart",pmin:939,pmax:939,disc:false,discInfo:null,avail:"2026-08-04",hb:false,notas:"【PLANO A · INDIVIDUAL】 Ático 40m² + terraço 18m², 1 quarto/1 banheiro. Gràcia LESTE (Sant Antoni Maria Claret, metro Joanic L4 — NÃO é a est. Gràcia FGC → commute ~55-70min via metro+FGC até Sant Cugat). €939/mês (~€1.089 all-in c/ ~€150 utilities) — dentro do teto. Disponível 04/08. Anúncio aceita ESTUDANTE c/ docs = temporada com causa (empadronável em tese, ≠ dos outros Atemporal ócio). ⚠️ PADRÓN NÃO confirmado — exigir cláusula reembolso-se-sem-padrón POR ESCRITO antes de pagar señal (depósito €1.686).",email:"leads@atemporalrent.com",tel:"+34 931 226 801",end:"Carrer de Sant Antoni Maria Claret — Gràcia, Barcelona",site:"https://www.atemporalbarcelona.es/en/barcelona/gracia/monthly-rental-penthouse-with-1-bedroom-and-terrace-near-the-sagrada-familia",source:"Atemporal Barcelona"}
 ];
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -1295,6 +1296,16 @@ let shortlist = loadStorage('hsl3', []);
     323:{triagem:'descartar',score:0,padron:'nao',habs:3,commuteMin:30}
   };
   Object.keys(seed).forEach(k=>{const id=+k;if(!shortlist.includes(id))shortlist.push(id);extras[id]=Object.assign(mk(),extras[id]||{},seed[k]);});
+  save('hsl3',shortlist);saveExtras();
+  localStorage.setItem(FLAG,'1');
+})();
+// ── Migration v24 (31/07/2026): apto 324 Ático Gràcia Atemporal (AT2311015) — plano A, favoritar + QUENTE + 5⭐ (pedido do usuário) — padrón dúvida ──
+(function migrateExtrasV24(){
+  const FLAG='hsl3_mig_v24';
+  if(localStorage.getItem(FLAG))return;
+  const mk=()=>({status:'nao_contatado',userNotes:'',precoReal:null,availReal:null,triagem:null,score:5,ultimaAcao:null,ultimaAcaoNota:'',ultimaAcaoData:null});
+  if(!shortlist.includes(324))shortlist.push(324);
+  extras[324]=Object.assign(mk(),extras[324]||{},{triagem:'quente',score:5,padron:'duvida',habs:1,commuteMin:60});
   save('hsl3',shortlist);saveExtras();
   localStorage.setItem(FLAG,'1');
 })();
